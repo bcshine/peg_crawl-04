@@ -1094,14 +1094,14 @@
         class PWAManager {
             constructor() {
                 this.installPrompt = null;
-                this.isInstalled = false;
+                this.usageDays = 67;
             }
 
             // PWA 초기화
             init() {
                 this.registerServiceWorker();
                 this.setupInstallPrompt();
-                this.checkUsageTime();
+                this.listenForMessages();
             }
 
             // Service Worker 등록
@@ -1117,9 +1117,13 @@
                             installTime = Date.now().toString();
                             localStorage.setItem('pwa-install-time', installTime);
                         }
-                        navigator.serviceWorker.controller?.postMessage({
-                            type: 'CHECK_EXPIRATION',
-                            installTime: parseInt(installTime)
+                        
+                        // 서비스 워커가 활성화될 때까지 기다렸다가 메시지 전송
+                        navigator.serviceWorker.ready.then(reg => {
+                            reg.active?.postMessage({
+                                type: 'CHECK_EXPIRATION',
+                                installTime: parseInt(installTime)
+                            });
                         });
 
                     } catch (error) {
@@ -1135,13 +1139,14 @@
                     this.installPrompt = e;
                     this.showInstallBanner();
                 });
+            }
 
-                // 앱이 설치되었는지 확인
-                window.addEventListener('appinstalled', () => {
-                    this.isInstalled = true;
-                    this.hideInstallBanner();
-                    this.showSuccessMessage();
-                    console.log('🎉 PWA 설치 완료!');
+            // 서비스 워커로부터 메시지 수신
+            listenForMessages() {
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    if (event.data && event.data.type === 'APP_EXPIRED') {
+                        this.showExpiredMessage();
+                    }
                 });
             }
 
@@ -1344,19 +1349,49 @@
             setupUpdateNotification() {
                 // 추가 업데이트 알림 설정 (필요시)
             }
+
+            // 만료 메시지 표시
+            showExpiredMessage() {
+                const message = document.createElement('div');
+                message.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 30px;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    text-align: center;
+                    z-index: 10001;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                `;
+
+                message.innerHTML = `
+                    <div style="font-size: 3em; margin-bottom: 10px;">⚠️</div>
+                    <h2 style="margin: 0 0 10px 0; color: #ff9500;">앱 사용 기간이 만료되었습니다!</h2>
+                    <p style="margin: 0; color: #666;">새로고침하여 업데이트하거나, 홈 화면에서 다시 설치해주세요.</p>
+                `;
+
+                document.body.appendChild(message);
+
+                setTimeout(() => {
+                    message.remove();
+                }, 5000); // 5초 후 자동 닫기
+            }
         }
 
         // PWA Manager 인스턴스 생성
         const PWAManagerInstance = new PWAManager();
-
-        // =============================================
-        // 앱 시작
-        // =============================================
-        // PWA 초기화
-        PWAManagerInstance.init();
         
-        // 기존 앱 초기화
-        App.init();
+        // 앱 시작
+        document.addEventListener('DOMContentLoaded', () => {
+            // PWA 초기화
+            PWAManagerInstance.init();
+            
+            // 기존 앱 초기화
+            App.init();
+        });
     </script>
 </body>
 </html>

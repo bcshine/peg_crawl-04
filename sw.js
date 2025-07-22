@@ -1,12 +1,10 @@
 // 나스닥 100 PEG 분석 PWA - Service Worker
-// 67일 만료 시스템 포함
+// GitHub Pages 호환성 및 안정성 개선
 
-const CACHE_NAME = 'nasdaq-peg-v1.3.0'; // 캐시 버전 업데이트
-const USAGE_DAYS = 67; // 67일 사용 기간
-const USAGE_MS = USAGE_DAYS * 24 * 60 * 60 * 1000;
-const WARNING_DAYS = 7; // 7일 전 경고
+const CACHE_NAME = 'nasdaq-peg-v1.4.0'; // 캐시 버전 업데이트
+const USAGE_DAYS = 67;
 
-// 캐시할 리소스 목록 (상대 경로로 수정)
+// 캐시할 핵심 리소스 목록 (상대 경로)
 const CACHE_URLS = [
   './',
   './index.html',
@@ -20,8 +18,7 @@ const CACHE_URLS = [
 // Service Worker 설치
 // ==========================================
 self.addEventListener('install', (event) => {
-  console.log('📦 Service Worker 설치 중...');
-  
+  console.log(`📦 [SW v1.4.0] Service Worker 설치 중...`);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -29,17 +26,11 @@ self.addEventListener('install', (event) => {
         return cache.addAll(CACHE_URLS);
       })
       .then(() => {
-        // 설치 시간 저장 (67일 만료 체크용)
-        const installTime = Date.now();
-        // localStorage는 Service Worker에서 직접 접근 불가
-        // indexedDB나 postMessage를 사용해야 하지만, 여기서는 클라이언트에서 처리하도록 단순화
-      })
-      .then(() => {
-        console.log('✅ Service Worker 설치 완료');
-        self.skipWaiting();
+        console.log('✅ [SW v1.4.0] Service Worker 설치 완료');
+        return self.skipWaiting(); // 즉시 활성화
       })
       .catch((error) => {
-        console.error('❌ Service Worker 설치 실패:', error);
+        console.error('❌ [SW v1.4.0] Service Worker 설치 실패:', error);
       })
   );
 });
@@ -48,25 +39,22 @@ self.addEventListener('install', (event) => {
 // Service Worker 활성화
 // ==========================================
 self.addEventListener('activate', (event) => {
-  console.log('🔄 Service Worker 활성화 중...');
-  
+  console.log(`🔄 [SW v1.4.0] Service Worker 활성화 중...`);
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        // 오래된 캐시 삭제
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
-              console.log('🗑️ 오래된 캐시 삭제:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-      .then(() => {
-        console.log('✅ Service Worker 활성화 완료');
-        return self.clients.claim();
-      })
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          // 현재 버전이 아닌 모든 캐시 삭제
+          if (cacheName !== CACHE_NAME) {
+            console.log(`🗑️ [SW v1.4.0] 오래된 캐시 삭제:`, cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('✅ [SW v1.4.0] Service Worker 활성화 완료');
+      return self.clients.claim(); // 클라이언트 제어권 즉시 획득
+    })
   );
 });
 
@@ -74,26 +62,43 @@ self.addEventListener('activate', (event) => {
 // 네트워크 요청 처리 (Stale-While-Revalidate 전략)
 // ==========================================
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((cachedResponse) => {
-        const fetchPromise = fetch(event.request).then((networkResponse) => {
-          // 유효한 응답일 경우에만 캐시에 저장
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
-          }
+  // HTML 페이지 요청에 대해서만 처리
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.open(CACHE_NAME).then((cache) => {
+        return fetch(event.request)
+          .then((networkResponse) => {
+            // 네트워크 응답을 캐시에 저장
+            if (networkResponse.status === 200) {
+              cache.put(event.request, networkResponse.clone());
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            // 네트워크 실패 시 캐시에서 응답
+            return cache.match(event.request);
+          });
+      })
+    );
+  } else if (CACHE_URLS.some(url => event.request.url.endsWith(url.substring(1)))) {
+    // 기타 정적 리소스는 캐시 우선 전략 사용
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        return cachedResponse || fetch(event.request).then((networkResponse) => {
+          caches.open(CACHE_NAME).then((cache) => {
+            if (networkResponse.status === 200) {
+              cache.put(event.request, networkResponse.clone());
+            }
+          });
           return networkResponse;
         });
-
-        // 캐시된 응답이 있으면 즉시 반환하고, 네트워크에서 새로운 응답을 가져와 캐시를 업데이트
-        return cachedResponse || fetchPromise;
-      });
-    })
-  );
+      })
+    );
+  }
 });
 
 // ==========================================
-// 클라이언트로부터 메시지 수신 (만료 시간 관리)
+// 클라이언트 메시지 처리
 // ==========================================
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CHECK_EXPIRATION') {
@@ -104,26 +109,15 @@ self.addEventListener('message', (event) => {
 function checkExpiration(installTime) {
   if (!installTime) return;
 
+  const usageMs = USAGE_DAYS * 24 * 60 * 60 * 1000;
   const elapsedTime = Date.now() - installTime;
-  const remainingTime = USAGE_MS - elapsedTime;
-
-  if (remainingTime <= 0) {
-    // 만료됨
+  
+  if (elapsedTime > usageMs) {
+    // 만료된 경우 모든 클라이언트에 메시지 전송
     self.clients.matchAll().then(clients => {
       clients.forEach(client => client.postMessage({ type: 'APP_EXPIRED' }));
     });
-  } else {
-    // 만료 경고
-    const warningTime = WARNING_DAYS * 24 * 60 * 60 * 1000;
-    if (remainingTime <= warningTime) {
-      const remainingDays = Math.ceil(remainingTime / (24 * 60 * 60 * 1000));
-      self.registration.showNotification('나스닥 100 PEG 분석', {
-        body: `앱이 ${remainingDays}일 후 만료됩니다. 새 버전 준비를 해주세요.`,
-        icon: 'bull_logo.png',
-        tag: 'expiration-warning'
-      });
-    }
   }
 }
 
-console.log('🚀 Service Worker 로드 완료 - v1.3.0');
+console.log('🚀 [SW v1.4.0] Service Worker 로드 완료');
