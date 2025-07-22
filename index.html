@@ -498,12 +498,12 @@
         @media (max-width: 768px) {
             :root {
                 /* 모바일용 컬럼 너비 재정의 */
-                --col-company: 120px; /* 회사 이름 너비 조정 */
-                --col-ticker: 60px;
-                --col-industry: 120px; /* 산업군 너비 확보 */
-                --col-peg: 70px;
-                --col-pe: 70px;
-                --col-price: 80px;
+                --col-company: 100px; /* 회사 이름 더 줄임 */
+                --col-ticker: 50px; /* 티커도 줄임 */
+                --col-industry: 140px; /* 산업군 더 확보 */
+                --col-peg: 60px;
+                --col-pe: 60px;
+                --col-price: 70px;
             }
             
             .app-container {
@@ -545,16 +545,19 @@
                 height: 60vh;
             }
             
+            .stock-table {
+                min-width: 900px;
+                width: 900px;
+                table-layout: fixed; /* 고정 테이블 레이아웃 강제 적용 */
+            }
+            
             .stock-table th, 
             .stock-table td {
                 padding: var(--spacing-md) var(--spacing-lg);
                 font-size: var(--font-sm);
                 white-space: nowrap;
-            }
-            
-            .stock-table {
-                min-width: 900px;
-                width: 900px;
+                overflow: hidden; /* 모든 셀에 오버플로우 숨김 */
+                text-overflow: ellipsis; /* 모든 셀에 말줄임표 */
             }
             
             .floating-btn {
