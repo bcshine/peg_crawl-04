@@ -343,6 +343,10 @@
             font-weight: 400;
             background: var(--bg-primary);
             transition: background-color 0.15s ease;
+            /* 모든 셀에 텍스트 오버플로우 처리 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .stock-table tbody tr:hover td {
@@ -498,12 +502,12 @@
         @media (max-width: 768px) {
             :root {
                 /* 모바일용 컬럼 너비 재정의 */
-                --col-company: 100px; /* 회사 이름 더 줄임 */
-                --col-ticker: 50px; /* 티커도 줄임 */
-                --col-industry: 140px; /* 산업군 더 확보 */
-                --col-peg: 60px;
-                --col-pe: 60px;
-                --col-price: 70px;
+                --col-company: 80px;  /* 회사명 더 줄임 */
+                --col-ticker: 40px;   /* 티커 더 줄임 */
+                --col-industry: 120px; /* 산업군 확보 */
+                --col-peg: 50px;      /* PEG 줄임 */
+                --col-pe: 50px;       /* P/E 줄임 */
+                --col-price: 60px;    /* 가격 줄임 */
             }
             
             .app-container {
@@ -546,8 +550,8 @@
             }
             
             .stock-table {
-                min-width: 900px;
-                width: 900px;
+                min-width: 480px;  /* 테이블 전체 너비 대폭 감소 */
+                width: 480px;
                 table-layout: fixed; /* 고정 테이블 레이아웃 강제 적용 */
             }
             
