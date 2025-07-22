@@ -10,6 +10,23 @@ app = Flask(__name__)
 def logo():
     return send_from_directory('.', 'logo2.png')
 
+@app.route('/bull_logo.png')
+def bull_logo():
+    return send_from_directory('.', 'bull_logo.png')
+
+@app.route('/bnb.jpg')
+def bnb_image():
+    return send_from_directory('.', 'bnb.jpg')
+
+# PWA 필수 파일들
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('.', 'manifest.json', mimetype='application/json')
+
+@app.route('/sw.js')
+def service_worker():
+    return send_from_directory('.', 'sw.js', mimetype='application/javascript')
+
 # HTML 템플릿을 읽어오는 함수
 def read_html_template():
     with open('index.html', 'r', encoding='utf-8') as f:
