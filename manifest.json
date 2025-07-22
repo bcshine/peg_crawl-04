@@ -2,15 +2,55 @@
   "name": "나스닥 100 PEG 분석",
   "short_name": "NASDAQ PEG",
   "description": "나스닥 100 종목 PEG 비율 분석 대시보드",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#f5f5f7",
   "theme_color": "#007aff",
   "scope": "/",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "business"],
   "icons": [
     {
       "src": "/bull_logo.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bull_logo.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bull_logo.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bull_logo.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bull_logo.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bull_logo.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bull_logo.png",
+      "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
@@ -31,6 +71,21 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "PEG 분석 보기",
+      "short_name": "PEG 분석",
+      "description": "나스닥 100 종목 PEG 분석 결과 확인",
+      "url": "/?shortcut=analysis",
+      "icons": [
+        {
+          "src": "/bull_logo.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 } 

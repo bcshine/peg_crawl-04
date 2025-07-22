@@ -1,51 +1,66 @@
-// Service Worker for 나스닥 100 PEG 분석 PWA
-// 캐시 버전 및 60일 만료 기능 포함
+// 나스닥 100 PEG 분석 PWA - Service Worker
+// 67일 만료 시스템 포함
 
-const CACHE_NAME = 'nasdaq-peg-v1.0.0';
-const CACHE_EXPIRY_DAYS = 60; // 60일 후 만료
-const CACHE_EXPIRY_MS = CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+const CACHE_NAME = 'nasdaq-peg-v1.2.0';
+const USAGE_DAYS = 67; // 67일 사용 기간
+const USAGE_MS = USAGE_DAYS * 24 * 60 * 60 * 1000;
+const WARNING_DAYS = 7; // 7일 전 경고
 
-// 캐시할 리소스들
-const urlsToCache = [
+// 캐시할 리소스 목록
+const CACHE_URLS = [
   '/',
   '/index.html',
-  '/manifest.json',
+  '/app.py',
   '/bull_logo.png',
   '/logo2.png',
-  '/bnb.jpg'
+  '/bnb.jpg',
+  '/manifest.json'
 ];
 
-// 설치 이벤트 - 초기 캐시 설정
+// ==========================================
+// Service Worker 설치
+// ==========================================
 self.addEventListener('install', (event) => {
   console.log('📦 Service Worker 설치 중...');
   
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('💾 캐시 파일들을 저장 중...');
-        return cache.addAll(urlsToCache);
+        console.log('💾 캐시 파일들 저장 중...');
+        return cache.addAll(CACHE_URLS);
       })
       .then(() => {
-        // 설치 시간 저장 (60일 만료 체크용)
+        // 설치 시간 저장 (67일 만료 체크용)
         const installTime = Date.now();
-        return self.registration.sync?.register('saveInstallTime') || 
-               localStorage.setItem('pwa-install-time', installTime.toString());
+        return self.registration.showNotification('나스닥 100 PEG 분석', {
+          body: `PWA 설치 완료! ${USAGE_DAYS}일간 사용 가능합니다.`,
+          icon: '/bull_logo.png',
+          badge: '/bull_logo.png',
+          tag: 'install-success',
+          requireInteraction: false,
+          data: { installTime }
+        });
       })
       .then(() => {
-        console.log('✅ PWA 설치 완료 - 60일간 사용 가능');
-        return self.skipWaiting();
+        console.log('✅ Service Worker 설치 완료');
+        self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('❌ Service Worker 설치 실패:', error);
       })
   );
 });
 
-// 활성화 이벤트 - 오래된 캐시 정리
+// ==========================================
+// Service Worker 활성화
+// ==========================================
 self.addEventListener('activate', (event) => {
   console.log('🔄 Service Worker 활성화 중...');
   
   event.waitUntil(
-    Promise.all([
-      // 오래된 캐시 삭제
-      caches.keys().then((cacheNames) => {
+    caches.keys()
+      .then((cacheNames) => {
+        // 오래된 캐시 삭제
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME) {
@@ -54,19 +69,20 @@ self.addEventListener('activate', (event) => {
             }
           })
         );
-      }),
-      // 클라이언트 제어 시작
-      self.clients.claim(),
-      // 만료 확인
-      checkAppExpiry()
-    ])
+      })
+      .then(() => {
+        console.log('✅ Service Worker 활성화 완료');
+        return self.clients.claim();
+      })
   );
 });
 
-// 네트워크 요청 가로채기 - 캐시 우선 전략
+// ==========================================
+// 네트워크 요청 처리 (캐시 우선 전략)
+// ==========================================
 self.addEventListener('fetch', (event) => {
-  // 먼저 만료 확인
-  if (isAppExpired()) {
+  // 67일 만료 체크
+  if (isExpired()) {
     event.respondWith(createExpiredResponse());
     return;
   }
@@ -74,12 +90,13 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // 캐시에서 찾으면 반환, 없으면 네트워크에서 가져오기
+        // 캐시에서 찾으면 반환
         if (response) {
-          console.log('📥 캐시에서 반환:', event.request.url);
+          console.log('💾 캐시에서 제공:', event.request.url);
           return response;
         }
 
+        // 네트워크에서 가져오기
         return fetch(event.request)
           .then((response) => {
             // 유효한 응답인지 확인
@@ -97,60 +114,30 @@ self.addEventListener('fetch', (event) => {
             return response;
           })
           .catch(() => {
-            // 네트워크 실패 시 기본 오프라인 페이지 또는 캐시된 페이지 반환
-            return caches.match('/index.html');
+            // 네트워크 실패 시 오프라인 페이지 제공
+            if (event.request.destination === 'document') {
+              return caches.match('/index.html');
+            }
           });
       })
   );
 });
 
-// 60일 만료 확인 함수
-function isAppExpired() {
-  try {
-    const installTimeStr = localStorage.getItem('pwa-install-time');
-    if (!installTimeStr) {
-      // 설치 시간이 없으면 현재 시간으로 설정
-      localStorage.setItem('pwa-install-time', Date.now().toString());
-      return false;
-    }
-
-    const installTime = parseInt(installTimeStr);
-    const currentTime = Date.now();
-    const timeDiff = currentTime - installTime;
-
-    console.log(`⏰ PWA 사용 기간: ${Math.floor(timeDiff / (24 * 60 * 60 * 1000))}일`);
-
-    return timeDiff > CACHE_EXPIRY_MS;
-  } catch (error) {
-    console.error('❌ 만료 확인 중 오류:', error);
+// ==========================================
+// 67일 만료 체크 시스템
+// ==========================================
+function isExpired() {
+  const installTime = localStorage.getItem('pwa-install-time');
+  if (!installTime) {
+    // 설치 시간이 없으면 지금 시간으로 설정
+    localStorage.setItem('pwa-install-time', Date.now().toString());
     return false;
   }
+
+  const elapsedTime = Date.now() - parseInt(installTime);
+  return elapsedTime > USAGE_MS;
 }
 
-// 앱 만료 확인 및 처리
-async function checkAppExpiry() {
-  if (isAppExpired()) {
-    console.log('⚠️ PWA 사용 기간이 만료되었습니다 (60일)');
-    
-    // 캐시 삭제
-    const cacheNames = await caches.keys();
-    await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
-    
-    // 로컬 스토리지 정리
-    localStorage.removeItem('pwa-install-time');
-    
-    // 클라이언트에게 만료 알림
-    const clients = await self.clients.matchAll();
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'APP_EXPIRED',
-        message: 'PWA 사용 기간이 만료되었습니다. 새로운 버전을 다운로드해주세요.'
-      });
-    });
-  }
-}
-
-// 만료된 앱에 대한 응답 생성
 function createExpiredResponse() {
   const expiredHTML = `
     <!DOCTYPE html>
@@ -161,104 +148,126 @@ function createExpiredResponse() {
         <title>앱 만료</title>
         <style>
             body {
-                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                text-align: center;
+                padding: 50px;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
-                text-align: center;
-                padding: 50px 20px;
-                margin: 0;
                 min-height: 100vh;
+                margin: 0;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
             }
             .container {
-                background: rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(10px);
-                border-radius: 20px;
+                background: rgba(255,255,255,0.1);
                 padding: 40px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
                 max-width: 400px;
             }
-            h1 { font-size: 2.5em; margin-bottom: 20px; }
-            p { font-size: 1.2em; line-height: 1.6; margin-bottom: 30px; }
-            .btn {
+            h1 { font-size: 2em; margin-bottom: 20px; }
+            p { font-size: 1.1em; line-height: 1.6; margin-bottom: 30px; }
+            .button {
+                display: inline-block;
+                padding: 15px 30px;
                 background: #007aff;
                 color: white;
-                padding: 15px 30px;
-                border: none;
-                border-radius: 10px;
-                font-size: 1.1em;
-                font-weight: 600;
-                cursor: pointer;
                 text-decoration: none;
-                display: inline-block;
-                transition: all 0.3s ease;
+                border-radius: 10px;
+                font-weight: bold;
+                transition: transform 0.2s;
             }
-            .btn:hover {
-                background: #0051d5;
-                transform: translateY(-2px);
-            }
+            .button:hover { transform: translateY(-2px); }
+            .icon { font-size: 4em; margin-bottom: 20px; }
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>📅 앱 만료</h1>
-            <p>60일 사용 기간이 만료되었습니다.<br>새로운 버전을 다운로드해주세요.</p>
-            <a href="/" class="btn" onclick="window.location.reload()">새로 다운로드</a>
+            <div class="icon">⏰</div>
+            <h1>앱 사용 기간 만료</h1>
+            <p>${USAGE_DAYS}일 사용 기간이 만료되었습니다.<br>
+            새로운 버전을 다운로드해주세요!</p>
+            <a href="/" class="button" onclick="clearExpiredData()">새로 다운로드</a>
         </div>
+        
+        <script>
+            function clearExpiredData() {
+                // 만료된 데이터 정리
+                localStorage.removeItem('pwa-install-time');
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                        registrations.forEach(registration => registration.unregister());
+                    });
+                }
+                window.location.reload();
+            }
+        </script>
     </body>
     </html>
   `;
-
+  
   return new Response(expiredHTML, {
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'no-cache'
-    }
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
   });
 }
 
-// 백그라운드 동기화 (설치 시간 저장)
+// ==========================================
+// 만료 경고 시스템 (7일 전)
+// ==========================================
+function checkExpirationWarning() {
+  const installTime = localStorage.getItem('pwa-install-time');
+  if (!installTime) return;
+
+  const elapsedTime = Date.now() - parseInt(installTime);
+  const remainingTime = USAGE_MS - elapsedTime;
+  const warningTime = WARNING_DAYS * 24 * 60 * 60 * 1000;
+
+  if (remainingTime <= warningTime && remainingTime > 0) {
+    const remainingDays = Math.ceil(remainingTime / (24 * 60 * 60 * 1000));
+    
+    self.registration.showNotification('나스닥 100 PEG 분석', {
+      body: `앱이 ${remainingDays}일 후 만료됩니다. 새 버전 준비를 해주세요.`,
+      icon: '/bull_logo.png',
+      badge: '/bull_logo.png',
+      tag: 'expiration-warning',
+      requireInteraction: true,
+      actions: [
+        { action: 'dismiss', title: '확인' }
+      ]
+    });
+  }
+}
+
+// 주기적으로 만료 경고 체크 (하루에 한 번)
+setInterval(checkExpirationWarning, 24 * 60 * 60 * 1000);
+
+// ==========================================
+// 백그라운드 동기화
+// ==========================================
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'saveInstallTime') {
+  if (event.tag === 'background-sync') {
     event.waitUntil(
-      (async () => {
-        try {
-          const installTime = Date.now();
-          localStorage.setItem('pwa-install-time', installTime.toString());
-          console.log('💾 PWA 설치 시간 저장 완료');
-        } catch (error) {
-          console.error('❌ 설치 시간 저장 실패:', error);
-        }
-      })()
+      // 백그라운드에서 데이터 동기화 작업
+      console.log('🔄 백그라운드 동기화 실행')
     );
   }
 });
 
-// 푸시 알림 (선택사항)
+// ==========================================
+// 푸시 알림 처리
+// ==========================================
 self.addEventListener('push', (event) => {
   const options = {
-    body: event.data ? event.data.text() : '나스닥 100 PEG 분석 업데이트',
+    body: event.data ? event.data.text() : '새로운 업데이트가 있습니다.',
     icon: '/bull_logo.png',
     badge: '/bull_logo.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
       primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: '분석 보기',
-        icon: '/bull_logo.png'
-      },
-      {
-        action: 'close',
-        title: '닫기'
-      }
-    ]
+    }
   };
 
   event.waitUntil(
@@ -266,15 +275,4 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// 알림 클릭 처리
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  if (event.action === 'explore') {
-    event.waitUntil(
-      clients.openWindow('/')
-    );
-  }
-});
-
-console.log('🚀 Service Worker 로드 완료 - PWA 준비됨'); 
+console.log('🚀 Service Worker 로드 완료 - 67일 사용 기간 시스템 활성화'); 
