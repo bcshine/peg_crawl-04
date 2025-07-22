@@ -1094,40 +1094,22 @@
         class PWAManager {
             constructor() {
                 this.installPrompt = null;
-                this.usageDays = 67;
             }
 
             // PWA 초기화
             init() {
                 this.registerServiceWorker();
                 this.setupInstallPrompt();
-                this.listenForMessages();
             }
 
-            // Service Worker 등록
+            // 서비스 워커 등록
             async registerServiceWorker() {
                 if ('serviceWorker' in navigator) {
                     try {
                         const registration = await navigator.serviceWorker.register('sw.js');
-                        console.log('✅ Service Worker 등록 성공:', registration.scope);
-                        
-                        // 설치 시간 기록 및 만료 체크 요청
-                        let installTime = localStorage.getItem('pwa-install-time');
-                        if (!installTime) {
-                            installTime = Date.now().toString();
-                            localStorage.setItem('pwa-install-time', installTime);
-                        }
-                        
-                        // 서비스 워커가 활성화될 때까지 기다렸다가 메시지 전송
-                        navigator.serviceWorker.ready.then(reg => {
-                            reg.active?.postMessage({
-                                type: 'CHECK_EXPIRATION',
-                                installTime: parseInt(installTime)
-                            });
-                        });
-
+                        console.log('✅ 서비스 워커가 성공적으로 등록되었습니다:', registration.scope);
                     } catch (error) {
-                        console.error('❌ Service Worker 등록 실패:', error);
+                        console.error('❌ 서비스 워커 등록에 실패했습니다:', error);
                     }
                 }
             }
@@ -1137,261 +1119,32 @@
                 window.addEventListener('beforeinstallprompt', (e) => {
                     e.preventDefault();
                     this.installPrompt = e;
-                    this.showInstallBanner();
+                    this.showInstallBanner(); // 설치 배너 표시
                 });
-            }
-
-            // 서비스 워커로부터 메시지 수신
-            listenForMessages() {
-                navigator.serviceWorker.addEventListener('message', (event) => {
-                    if (event.data && event.data.type === 'APP_EXPIRED') {
-                        this.showExpiredMessage();
-                    }
-                });
-            }
-
-            // 설치 배너 생성 및 표시
-            setupInstallBanner() {
-                // 브라우저와 OS 감지
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-                const isAndroid = /android/i.test(navigator.userAgent);
-                
-                const banner = document.createElement('div');
-                banner.id = 'pwa-install-banner';
-                banner.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    background: linear-gradient(135deg, #007aff, #5856d6);
-                    color: white;
-                    padding: 15px;
-                    text-align: center;
-                    z-index: 10000;
-                    display: none;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                `;
-                
-                let installButtonText = '설치하기';
-                let installMessage = `<strong>📱 나스닥 100 PEG 분석</strong>을 홈 화면에 추가하세요!<br><small>네이티브 앱처럼 사용 가능</small>`;
-                
-                // OS별 맞춤 메시지
-                if (isIOS) {
-                    installButtonText = 'iOS 설치 방법';
-                    installMessage = `<strong>📱 iOS에서 네이티브 앱으로 설치하기</strong><br><small>Safari에서 "홈 화면에 추가" 기능 사용</small>`;
-                } else if (isAndroid) {
-                    installButtonText = '앱 설치';
-                    installMessage = `<strong>📱 Android에서 네이티브 앱으로 설치하기</strong><br><small>Chrome에서 "앱 설치" 기능 사용</small>`;
-                }
-                
-                banner.innerHTML = `
-                    <div style="max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
-                        <div style="flex: 1;">
-                            ${installMessage}
-                        </div>
-                        <div style="display: flex; gap: 10px; margin-left: 20px;">
-                            <button onclick="PWAManagerInstance.install()" style="
-                                background: white;
-                                color: #007aff;
-                                border: none;
-                                padding: 8px 16px;
-                                border-radius: 6px;
-                                font-weight: bold;
-                                cursor: pointer;
-                                display: flex;
-                                align-items: center;
-                                gap: 5px;
-                            ">
-                                <span style="font-size: 1.2em;">📲</span> ${installButtonText}
-                            </button>
-                            <button onclick="PWAManagerInstance.hideInstallBanner()" style="
-                                background: rgba(255,255,255,0.2);
-                                color: white;
-                                border: none;
-                                padding: 8px 16px;
-                                border-radius: 6px;
-                                cursor: pointer;
-                            ">닫기</button>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(banner);
             }
 
             // 설치 배너 표시
             showInstallBanner() {
-                // 이미 설치되었거나 이전에 거부했다면 표시하지 않음
-                if (this.isInstalled || localStorage.getItem('pwa-install-dismissed')) {
-                    return;
-                }
-
-                const banner = document.getElementById('pwa-install-banner');
-                if (banner && this.installPrompt) {
-                    banner.style.display = 'block';
-                    // 페이지 내용을 아래로 밀기
-                    document.body.style.paddingTop = banner.offsetHeight + 'px';
-                }
-            }
-
-            // 설치 배너 숨기기
-            hideInstallBanner() {
-                const banner = document.getElementById('pwa-install-banner');
-                if (banner) {
-                    banner.style.display = 'none';
-                    document.body.style.paddingTop = '0';
-                    localStorage.setItem('pwa-install-dismissed', 'true');
-                }
+                // 설치 배너를 표시하는 로직 (UI/UX에 맞게 구현)
+                // 예: document.getElementById('install-banner').style.display = 'block';
             }
 
             // PWA 설치 실행
             async install() {
                 if (!this.installPrompt) {
-                    // 브라우저와 OS 감지
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-                    const isAndroid = /android/i.test(navigator.userAgent);
-                    
-                    let installMessage = '이 브라우저에서는 자동 설치가 지원되지 않습니다.\\n\\n';
-                    
-                    if (isIOS) {
-                        installMessage += '📱 iOS 설치 방법:\\n' +
-                            '1. Safari 브라우저에서 이 페이지를 열어주세요\\n' +
-                            '2. 하단 공유 버튼(↑) 탭\\n' +
-                            '3. "홈 화면에 추가" 선택\\n' +
-                            '4. "추가" 버튼 탭';
-                    } else if (isAndroid) {
-                        installMessage += '📱 Android 설치 방법:\\n' +
-                            '1. Chrome 브라우저에서 이 페이지를 열어주세요\\n' +
-                            '2. 메뉴(⋮) 버튼 탭\\n' +
-                            '3. "앱 설치" 또는 "홈 화면에 추가" 선택';
-                    } else {
-                        installMessage += '수동 설치 방법:\\n' +
-                            '• Chrome/Edge: 주소창 우측 설치 아이콘 클릭\\n' +
-                            '• Safari: 공유 버튼 → "홈 화면에 추가"';
-                    }
-                    
-                    alert(installMessage);
+                    alert('이 브라우저에서는 자동 설치가 지원되지 않습니다.\\n수동으로 설치해주세요.');
                     return;
                 }
-
-                const result = await this.installPrompt.prompt();
-                console.log('설치 프롬프트 결과:', result.outcome);
-
-                if (result.outcome === 'accepted') {
-                    this.hideInstallBanner();
-                }
-
-                this.installPrompt = null;
-            }
-
-            // 설치 성공 메시지
-            showSuccessMessage() {
-                const message = document.createElement('div');
-                message.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: white;
-                    padding: 30px;
-                    border-radius: 15px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                    text-align: center;
-                    z-index: 10001;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                `;
-
-                message.innerHTML = `
-                    <div style="font-size: 3em; margin-bottom: 10px;">🎉</div>
-                    <h2 style="margin: 0 0 10px 0; color: #007aff;">설치 완료!</h2>
-                    <p style="margin: 0; color: #666;">홈 화면에서 앱을 찾아보세요.</p>
-                `;
-
-                document.body.appendChild(message);
-
-                setTimeout(() => {
-                    message.remove();
-                }, 3000);
-            }
-
-            // 업데이트 알림
-            showUpdateNotification() {
-                const notification = document.createElement('div');
-                notification.style.cssText = `
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    background: #007aff;
-                    color: white;
-                    padding: 15px;
-                    border-radius: 10px;
-                    z-index: 10000;
-                    cursor: pointer;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-                `;
-
-                notification.innerHTML = `
-                    <strong>새 업데이트</strong><br>
-                    <small>클릭하여 새로고침</small>
-                `;
-
-                notification.onclick = () => {
-                    window.location.reload();
-                };
-
-                document.body.appendChild(notification);
-            }
-
-
-            setupUpdateNotification() {
-                // 추가 업데이트 알림 설정 (필요시)
-            }
-
-            // 만료 메시지 표시
-            showExpiredMessage() {
-                const message = document.createElement('div');
-                message.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: white;
-                    padding: 30px;
-                    border-radius: 15px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                    text-align: center;
-                    z-index: 10001;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                `;
-
-                message.innerHTML = `
-                    <div style="font-size: 3em; margin-bottom: 10px;">⚠️</div>
-                    <h2 style="margin: 0 0 10px 0; color: #ff9500;">앱 사용 기간이 만료되었습니다!</h2>
-                    <p style="margin: 0; color: #666;">새로고침하여 업데이트하거나, 홈 화면에서 다시 설치해주세요.</p>
-                `;
-
-                document.body.appendChild(message);
-
-                setTimeout(() => {
-                    message.remove();
-                }, 5000); // 5초 후 자동 닫기
+                await this.installPrompt.prompt();
             }
         }
 
-        // PWA Manager 인스턴스 생성
+        // PWA Manager 인스턴스 생성 및 초기화
         const PWAManagerInstance = new PWAManager();
-        
-        // 앱 시작
-        document.addEventListener('DOMContentLoaded', () => {
-            // PWA 초기화
-            PWAManagerInstance.init();
-            
-            // 기존 앱 초기화
-            App.init();
-        });
+        PWAManagerInstance.init();
+
+        // 기존 앱 초기화
+        App.init();
     </script>
 </body>
 </html>
