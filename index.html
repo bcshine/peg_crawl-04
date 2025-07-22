@@ -1,0 +1,1433 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="나스닥 100 종목 PEG 비율 분석 대시보드">
+    <title>NASDAQ 100 PEG Analysis Dashboard</title>
+    
+    <!-- PWA 메타태그 -->
+    <meta name="theme-color" content="#007aff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="나스닥 100 PEG">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="나스닥 100 PEG 분석">
+    <meta name="msapplication-TileColor" content="#007aff">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- PWA 아이콘 및 매니페스트 -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="/bull_logo.png">
+    <link rel="apple-touch-icon" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/bull_logo.png">
+    
+    <!-- iOS 스플래시 화면 설정 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Microsoft Edge/IE -->
+    <meta name="msapplication-config" content="none">
+    <style>
+        /* =============================================
+           CSS 변수 정의 (디자인 시스템)
+        ============================================= */
+        :root {
+            /* 컬러 팔레트 */
+            --primary-blue: #007aff;
+            --secondary-purple: #5856d6;
+            --success-green: #34c759;
+            --warning-orange: #ff9500;
+            --error-red: #ff3b30;
+            
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --text-tertiary: #86868b;
+            --text-white: #ffffff;
+            
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f7;
+            --bg-tertiary: #f8f9fa;
+            --bg-quaternary: #f2f2f7;
+            
+            --border-light: #e5e5e7;
+            --border-medium: #d1d1d6;
+            --border-dark: #aeaeb2;
+            
+            /* 간격 */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 20px;
+            --spacing-2xl: 24px;
+            --spacing-3xl: 32px;
+            --spacing-4xl: 40px;
+            --spacing-5xl: 48px;
+            
+            /* 폰트 크기 */
+            --font-xs: 12px;
+            --font-sm: 14px;
+            --font-md: 15px;
+            --font-lg: 19px;
+            --font-xl: 22px;
+            --font-2xl: 32px;
+            --font-3xl: 48px;
+            
+            /* 기타 */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-xl: 20px;
+            --shadow-sm: 0 1px 4px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 24px rgba(0,0,0,0.06);
+            --transition: all 0.2s ease;
+            
+            /* 테이블 컬럼 너비 */
+            --col-company: 180px;
+            --col-ticker: 80px;
+            --col-industry: 120px;
+            --col-peg: 90px;
+            --col-pe: 90px;
+            --col-price: 100px;
+        }
+
+        /* =============================================
+           기본 설정
+        ============================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.47059;
+            font-weight: 400;
+            font-size: var(--font-md);
+        }
+
+        /* =============================================
+           레이아웃 컴포넌트
+        ============================================= */
+        .app-container {
+            max-width: 1200px;
+            margin: var(--spacing-4xl) auto;
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        /* =============================================
+           헤더 섹션
+        ============================================= */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-purple) 100%);
+            padding: var(--spacing-5xl) var(--spacing-4xl) var(--spacing-3xl);
+            text-align: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .header-title-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .header-logo {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            filter: drop-shadow(3px 3px rgba(0, 0, 0, 0.3));
+        }
+        
+        .header-title {
+            font-size: var(--font-3xl);
+            font-weight: 700;
+            color: var(--text-white);
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+        
+        .header-subtitle {
+            font-size: var(--font-lg);
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+            margin-bottom: var(--spacing-2xl);
+            letter-spacing: 0.011em;
+        }
+        
+        .update-status {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            font-size: var(--font-sm);
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            background: var(--success-green);
+            color: var(--text-white);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--font-xs);
+            font-weight: 600;
+            margin-right: var(--spacing-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* =============================================
+           범례 섹션
+        ============================================= */
+        .legend-section {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-quaternary) 100%);
+            padding: var(--spacing-3xl) var(--spacing-4xl);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .legend-title {
+            font-size: var(--font-xl);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xl);
+            letter-spacing: -0.01em;
+        }
+        
+        .legend-items {
+            display: flex;
+            gap: var(--spacing-3xl);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            background: var(--bg-primary);
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .legend-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: var(--spacing-sm);
+        }
+        
+        .legend-text {
+            font-size: var(--font-md);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .disclaimer {
+            margin-top: var(--spacing-xl);
+            text-align: center;
+            font-size: var(--font-sm);
+            color: var(--text-tertiary);
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        /* =============================================
+           테이블 섹션
+        ============================================= */
+        .table-section {
+            background: var(--bg-primary);
+            overflow: hidden;
+        }
+        
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table-wrapper {
+            height: 70vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .stock-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: var(--bg-primary);
+            table-layout: fixed;
+            min-width: 1000px;
+        }
+        
+        /* 테이블 헤더 */
+        .table-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .table-header th {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, var(--bg-quaternary) 0%, var(--border-light) 100%);
+            color: var(--text-primary);
+            padding: var(--spacing-lg) var(--spacing-xl);
+            text-align: left;
+            font-weight: 600;
+            font-size: var(--font-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            border: none;
+            position: relative;
+            letter-spacing: 0.01em;
+            border-bottom: 1px solid var(--border-medium);
+            z-index: 30;
+        }
+        
+        .table-header th:hover {
+            background: linear-gradient(135deg, var(--border-light) 0%, var(--border-medium) 100%);
+        }
+        
+        .table-header th::after {
+            content: '⇅';
+            position: absolute;
+            right: var(--spacing-md);
+            font-size: var(--font-xs);
+            color: var(--text-tertiary);
+            transition: color 0.2s ease;
+        }
+        
+        .table-header th.sort-asc::after {
+            content: '▲';
+            color: var(--primary-blue);
+        }
+        
+        .table-header th.sort-desc::after {
+            content: '▼';
+            color: var(--primary-blue);
+        }
+
+        /* 컬럼 너비 정의 */
+        .col-company { width: var(--col-company); }
+        .col-ticker { width: var(--col-ticker); }
+        .col-industry { width: var(--col-industry); }
+        .col-peg { width: var(--col-peg); }
+        .col-pe { width: var(--col-pe); }
+        .col-price { width: var(--col-price); }
+        
+        /* 테이블 데이터 */
+        .stock-table td {
+            padding: var(--spacing-lg) var(--spacing-xl);
+            border-bottom: 1px solid #f6f6f6;
+            font-size: var(--font-md);
+            font-weight: 400;
+            background: var(--bg-primary);
+            transition: background-color 0.15s ease;
+        }
+        
+        .stock-table tbody tr:hover td {
+            background: #f9f9f9;
+        }
+
+        /* 셀 타입별 스타일 */
+        .cell-company {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .cell-ticker {
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-align: center;
+            font-size: var(--font-sm);
+            letter-spacing: 0.5px;
+        }
+        
+        .cell-industry {
+            font-size: var(--font-sm);
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+        
+        .cell-price {
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .cell-pe {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .cell-peg {
+            text-align: right;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            padding: 6px 10px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* PEG 등급별 색상 */
+        .peg-excellent {
+            background: rgba(52, 199, 89, 0.1);
+            color: #30a46c;
+        }
+        
+        .peg-good {
+            background: rgba(255, 149, 0, 0.1);
+            color: #f56500;
+        }
+        
+        .peg-poor {
+            background: rgba(255, 59, 48, 0.1);
+            color: #d70015;
+        }
+        
+        .peg-na {
+            background: #f6f6f6;
+            color: var(--text-tertiary);
+        }
+
+        /* 범례 색상 정의 */
+        .legend-indicator.peg-excellent { background: rgba(52, 199, 89, 0.8); }
+        .legend-indicator.peg-good { background: rgba(255, 149, 0, 0.8); }
+        .legend-indicator.peg-poor { background: rgba(255, 59, 48, 0.8); }
+
+        /* =============================================
+           스크롤바 커스터마이징
+        ============================================= */
+        .table-wrapper::-webkit-scrollbar,
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .table-wrapper::-webkit-scrollbar-track,
+        .table-container::-webkit-scrollbar-track {
+            background: #f6f6f6;
+        }
+        
+        .table-wrapper::-webkit-scrollbar-thumb,
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--border-medium);
+            border-radius: 4px;
+        }
+        
+        .table-wrapper::-webkit-scrollbar-thumb:hover,
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: var(--border-dark);
+        }
+
+        /* =============================================
+           플로팅 버튼
+        ============================================= */
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-purple) 100%);
+            color: var(--text-white);
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: var(--font-sm);
+            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3);
+            transition: var(--transition);
+            z-index: 1000;
+            border: none;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+        
+        .floating-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 122, 255, 0.4);
+            background: linear-gradient(135deg, #0051d5 0%, #4c44b8 100%);
+            color: var(--text-white);
+            text-decoration: none;
+        }
+        
+        .floating-btn:active {
+            transform: translateY(0px);
+        }
+
+        /* =============================================
+           푸터
+        ============================================= */
+        .app-footer {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-quaternary) 100%);
+            border-top: 1px solid var(--border-light);
+            font-size: var(--font-sm);
+            color: var(--text-tertiary);
+        }
+
+        /* =============================================
+           반응형 디자인
+        ============================================= */
+        @media (max-width: 768px) {
+            :root {
+                /* 모바일용 컬럼 너비 재정의 */
+                --col-company: 140px;
+                --col-ticker: 60px;
+                --col-industry: 100px;
+                --col-peg: 70px;
+                --col-pe: 70px;
+                --col-price: 80px;
+            }
+            
+            .app-container {
+                margin: var(--spacing-xl) var(--spacing-lg);
+                border-radius: var(--radius-md);
+            }
+            
+            .app-header {
+                padding: var(--spacing-3xl) var(--spacing-2xl) var(--spacing-2xl);
+            }
+            
+            .header-title-wrapper {
+                gap: 10px;
+            }
+            
+            .header-logo {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .header-title {
+                font-size: var(--font-2xl);
+            }
+            
+            .header-subtitle {
+                font-size: 17px;
+            }
+            
+            .legend-section {
+                padding: var(--spacing-2xl);
+            }
+            
+            .legend-items {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+            
+            .table-wrapper {
+                height: 60vh;
+            }
+            
+            .stock-table th, 
+            .stock-table td {
+                padding: var(--spacing-md) var(--spacing-lg);
+                font-size: var(--font-sm);
+                white-space: nowrap;
+            }
+            
+            .stock-table {
+                min-width: 900px;
+                width: 900px;
+            }
+            
+            .floating-btn {
+                bottom: var(--spacing-xl);
+                right: var(--spacing-xl);
+                padding: 10px var(--spacing-lg);
+                font-size: 13px;
+            }
+            
+            .scroll-notice {
+                text-align: center;
+                padding: var(--spacing-md);
+                font-size: 0.85em;
+                color: var(--primary-blue);
+                background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+                border: 1px solid rgba(0, 122, 255, 0.2);
+                border-radius: var(--radius-sm);
+                margin: var(--spacing-sm) var(--spacing-lg);
+                font-weight: 500;
+                box-shadow: 0 2px 8px rgba(0, 122, 255, 0.1);
+            }
+        }
+
+        /* =============================================
+           접근성 개선
+        ============================================= */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* 고대비 모드 지원 */
+        @media (prefers-contrast: high) {
+            :root {
+                --text-primary: #000000;
+                --text-secondary: #333333;
+                --border-light: #000000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="app-container" role="main">
+        <!-- 헤더 섹션 -->
+        <header class="app-header">
+            <div class="header-title-wrapper">
+                <img src="logo2.png" alt="나스닥 분석 로고" class="header-logo">
+                <h1 class="header-title">나스닥 100 종목 분석 (PEG) V1.0</h1>
+            </div>
+            <p class="header-subtitle">PEG Ratio Analysis Dashboard</p>
+            <div class="update-status" role="status" aria-live="polite">
+                <span class="status-badge">Live</span>
+                <span>Updated: 2025.07.22 최신 크롤링 • Manual Update</span>
+            </div>
+        </header>
+        
+        <!-- 범례 섹션 -->
+        <section class="legend-section" aria-labelledby="legend-title">
+            <h2 id="legend-title" class="legend-title">PEG Ratio Guide</h2>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-indicator peg-excellent" aria-hidden="true"></div>
+                    <span class="legend-text"><strong>&lt; 1.0</strong> 성장성 높음</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-indicator peg-good" aria-hidden="true"></div>
+                    <span class="legend-text"><strong>1.0 - 2.0</strong> 보통 수준</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-indicator peg-poor" aria-hidden="true"></div>
+                    <span class="legend-text"><strong>&gt; 2.0</strong> 성장성 낮음</span>
+                </div>
+            </div>
+            <div class="disclaimer">
+                이 데이터는 수집방법에 따라 결과가 다를 수 있습니다. 투자 시 증권앱의 구체적 데이터를 확인하세요<br>
+                종목에 대한 추가 정보가 필요하시다면, <strong>'종목분석기'</strong> 버튼을 클릭하세요.
+            </div>
+        </section>
+        
+        <!-- 테이블 섹션 -->
+        <section class="table-section" aria-labelledby="table-title">
+            <h2 id="table-title" class="sr-only">나스닥 100 종목 데이터 테이블</h2>
+            <div class="table-container">
+                <div class="table-wrapper">
+                    <table class="stock-table" 
+                           role="table" 
+                           aria-label="나스닥 100 종목 PEG 분석 데이터"
+                           id="stockTable">
+                        <thead class="table-header">
+                            <tr role="row">
+                                <th role="columnheader" 
+                                    class="col-company" 
+                                    tabindex="0"
+                                    aria-sort="none"
+                                    onclick="TableManager.sortTable(0)"
+                                    onkeydown="TableManager.handleKeyPress(event, 0)">
+                                    Company
+                                </th>
+                                <th role="columnheader" 
+                                    class="col-ticker" 
+                                    tabindex="0"
+                                    aria-sort="none"
+                                    onclick="TableManager.sortTable(1)"
+                                    onkeydown="TableManager.handleKeyPress(event, 1)">
+                                    Ticker
+                                </th>
+                                <th role="columnheader" 
+                                    class="col-industry" 
+                                    tabindex="0"
+                                    aria-sort="none"
+                                    onclick="TableManager.sortTable(2)"
+                                    onkeydown="TableManager.handleKeyPress(event, 2)">
+                                    Industry
+                                </th>
+                                <th role="columnheader" 
+                                    class="col-peg" 
+                                    tabindex="0"
+                                    aria-sort="none"
+                                    onclick="TableManager.sortTable(3)"
+                                    onkeydown="TableManager.handleKeyPress(event, 3)">
+                                    PEG
+                                </th>
+                                <th role="columnheader" 
+                                    class="col-pe" 
+                                    tabindex="0"
+                                    aria-sort="none"
+                                    onclick="TableManager.sortTable(4)"
+                                    onkeydown="TableManager.handleKeyPress(event, 4)">
+                                    Trail P/E
+                                </th>
+                                <th role="columnheader" 
+                                    class="col-pe" 
+                                    tabindex="0"
+                                    aria-sort="none"
+                                    onclick="TableManager.sortTable(5)"
+                                    onkeydown="TableManager.handleKeyPress(event, 5)">
+                                    Fwd P/E
+                                </th>
+                                <th role="columnheader" 
+                                    class="col-price" 
+                                    tabindex="0"
+                                    aria-sort="none"
+                                    onclick="TableManager.sortTable(6)"
+                                    onkeydown="TableManager.handleKeyPress(event, 6)">
+                                    Price
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- 데이터는 JavaScript로 동적 생성 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="scroll-notice">
+                👈👉 테이블을 좌우로 스크롤하여 모든 데이터를 확인하세요
+            </div>
+        </section>
+        
+        <!-- 푸터 -->
+        <footer class="app-footer">
+            <p>Data updated: 2025.07.22 최신 크롤링 • Source: Yahoo Finance</p>
+        </footer>
+    </main>
+
+    <!-- 플로팅 버튼 -->
+    <a href="https://chatgpt.com/g/g-6876f318c7a88191ba6b638a5b4be237-migug-sijang-tuja-jongmog-bunseoggi" 
+       target="_blank" 
+       rel="noopener noreferrer"
+       class="floating-btn"
+       aria-label="종목분석기로 이동">
+        종목분석기
+    </a>
+
+    <!-- 스크린 리더 전용 요소 -->
+    <style>
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+
+    <script>
+        // =============================================
+        // 주식 데이터 모델 (2025-07-22 최신 업데이트)
+        // =============================================
+        const STOCK_DATA = [
+            {company: "Apple Inc.", ticker: "AAPL", industry: "Technology - Consumer Electronics", peg: 1.969, trailPE: 33.10, fwdPE: 25.57, price: 212.48},
+            {company: "Airbnb, Inc.", ticker: "ABNB", industry: "Consumer Cyclical - Travel Services", peg: 1.988, trailPE: 35.04, fwdPE: 30.68, price: 138.07},
+            {company: "Adobe Inc.", ticker: "ADBE", industry: "Technology - Software - Application", peg: 1.185, trailPE: 23.54, fwdPE: 17.89, price: 367.68},
+            {company: "Analog Devices, Inc.", ticker: "ADI", industry: "Technology - Semiconductors", peg: 1.415, trailPE: 65.35, fwdPE: 31.89, price: 240.48},
+            {company: "Automatic Data Processing, Inc.", ticker: "ADP", industry: "Technology - Software - Application", peg: 3.191, trailPE: 30.77, fwdPE: 27.68, price: 300.90},
+            {company: "Autodesk, Inc.", ticker: "ADSK", industry: "Technology - Software - Application", peg: 1.752, trailPE: 63.34, fwdPE: 32.15, price: 295.16},
+            {company: "Applied Materials, Inc.", ticker: "AMAT", industry: "Technology - Semiconductor Equipment & Materials", peg: 1.894, trailPE: 23.40, fwdPE: 19.88, price: 192.61},
+            {company: "Advanced Micro Devices, Inc.", ticker: "AMD", industry: "Technology - Semiconductors", peg: 0.784, trailPE: 114.60, fwdPE: 30.78, price: 157.00},
+            {company: "Amgen Inc.", ticker: "AMGN", industry: "Healthcare - Drug Manufacturers - General", peg: 0.981, trailPE: 26.97, fwdPE: 14.31, price: 295.87},
+            {company: "Amazon.com, Inc.", ticker: "AMZN", industry: "Consumer Cyclical - Internet Retail", peg: 2.940, trailPE: 37.28, fwdPE: 37.28, price: 229.30},
+            {company: "ANSYS, Inc.", ticker: "ANSS", industry: "Technology - Software - Application", peg: 2.466, trailPE: 55.53, fwdPE: 34.00, price: 374.30},
+            {company: "ASML Holding N.V.", ticker: "ASML", industry: "Technology - Semiconductor Equipment & Materials", peg: 1.503, trailPE: 25.71, fwdPE: 26.95, price: 719.68},
+            {company: "Broadcom Inc.", ticker: "AVGO", industry: "Technology - Semiconductors", peg: 1.329, trailPE: 104.80, fwdPE: 46.71, price: 288.21},
+            {company: "Baidu, Inc.", ticker: "BIDU", industry: "Communication Services - Internet Content & Information", peg: 0.194, trailPE: 8.78, fwdPE: 8.01, price: 88.81},
+            {company: "Biogen Inc.", ticker: "BIIB", industry: "Healthcare - Drug Manufacturers - General", peg: null, trailPE: 12.12, fwdPE: 7.36, price: 122.68},
+            {company: "Booking Holdings Inc.", ticker: "BKNG", industry: "Consumer Cyclical - Travel Services", peg: 1.641, trailPE: 35.43, fwdPE: 27.05, price: 5677.15},
+            {company: "Cadence Design Systems, Inc.", ticker: "CDNS", industry: "Technology - Software - Application", peg: 3.361, trailPE: 80.28, fwdPE: 46.18, price: 316.32},
+            {company: "Charter Communications, Inc.", ticker: "CHTR", industry: "Communication Services - Telecom Services", peg: 0.406, trailPE: 10.85, fwdPE: 10.87, price: 388.89},
+            {company: "Comcast Corporation", ticker: "CMCSA", industry: "Communication Services - Telecom Services", peg: 1.614, trailPE: 8.62, fwdPE: 7.99, price: 35.01},
+            {company: "Coinbase Global, Inc.", ticker: "COIN", industry: "Financial Services - Financial Data & Stock Exchanges", peg: 124.89, trailPE: 77.60, fwdPE: 115.86, price: 413.63},
+            {company: "Costco Wholesale Corporation", ticker: "COST", industry: "Consumer Defensive - Discount Stores", peg: 5.052, trailPE: 53.87, fwdPE: 48.15, price: 947.56},
+            {company: "Copart, Inc.", ticker: "CPRT", industry: "Industrials - Specialty Business Services", peg: 2.275, trailPE: 30.48, fwdPE: 26.45, price: 46.03},
+            {company: "Salesforce, Inc.", ticker: "CRM", industry: "Technology - Software - Application", peg: 1.402, trailPE: 40.98, fwdPE: 23.57, price: 262.28},
+            {company: "CrowdStrike Holdings, Inc.", ticker: "CRWD", industry: "Technology - Software - Infrastructure", peg: 5.424, trailPE: null, fwdPE: 112.78, price: 481.58},
+            {company: "Cisco Systems, Inc.", ticker: "CSCO", industry: "Technology - Communication Equipment", peg: 2.264, trailPE: 27.89, fwdPE: 17.52, price: 68.34},
+            {company: "Cintas Corporation", ticker: "CTAS", industry: "Industrials - Specialty Business Services", peg: 3.926, trailPE: 50.41, fwdPE: 47.29, price: 221.32},
+            {company: "Datadog, Inc.", ticker: "DDOG", industry: "Technology - Software - Application", peg: 2.745, trailPE: 315.80, fwdPE: 71.56, price: 145.27},
+            {company: "Dollar Tree, Inc.", ticker: "DLTR", industry: "Consumer Defensive - Discount Stores", peg: 1.326, trailPE: 22.15, fwdPE: 18.53, price: 112.31},
+            {company: "DocuSign, Inc.", ticker: "DOCU", industry: "Technology - Software - Application", peg: 0.134, trailPE: 15.08, fwdPE: 21.50, price: 79.34},
+            {company: "Electronic Arts Inc.", ticker: "EA", industry: "Communication Services - Electronic Gaming & Multimedia", peg: 1.387, trailPE: 36.09, fwdPE: 17.98, price: 153.39},
+            {company: "eBay Inc.", ticker: "EBAY", industry: "Consumer Cyclical - Internet Retail", peg: 1.980, trailPE: 19.00, fwdPE: 15.14, price: 79.03},
+            {company: "Exelon Corporation", ticker: "EXC", industry: "Utilities - Utilities - Regulated Electric", peg: 2.097, trailPE: 16.26, fwdPE: 16.63, price: 43.73},
+            {company: "Expeditors International of Washington, Inc.", ticker: "EXPD", industry: "Industrials - Integrated Freight & Logistics", peg: 4.031, trailPE: 18.69, fwdPE: 20.92, price: 112.54},
+            {company: "Fastenal Company", ticker: "FAST", industry: "Industrials - Industrial Distribution", peg: 4.119, trailPE: 44.25, fwdPE: 21.01, price: 46.02},
+            {company: "Fox Corporation", ticker: "FOX", industry: "Communication Services - Entertainment", peg: 5.657, trailPE: 12.64, fwdPE: 21.73, price: 51.07},
+            {company: "Fox Corporation", ticker: "FOXA", industry: "Communication Services - Entertainment", peg: 6.158, trailPE: 13.73, fwdPE: 14.87, price: 55.47},
+            {company: "Fortinet, Inc.", ticker: "FTNT", industry: "Technology - Software - Infrastructure", peg: 2.944, trailPE: 43.83, fwdPE: 44.37, price: 106.94},
+            {company: "Gilead Sciences, Inc.", ticker: "GILD", industry: "Healthcare - Drug Manufacturers - General", peg: 0.225, trailPE: 22.75, fwdPE: 14.57, price: 108.28},
+            {company: "Alphabet Inc.", ticker: "GOOG", industry: "Communication Services - Internet Content & Information", peg: 1.391, trailPE: 21.33, fwdPE: 21.36, price: 191.15},
+            {company: "Alphabet Inc.", ticker: "GOOGL", industry: "Communication Services - Internet Content & Information", peg: 1.384, trailPE: 21.22, fwdPE: 21.22, price: 190.10},
+            {company: "Honeywell International Inc.", ticker: "HON", industry: "Industrials - Conglomerates", peg: 2.350, trailPE: 27.04, fwdPE: 21.36, price: 235.22},
+            {company: "Robinhood Markets, Inc.", ticker: "HOOD", industry: "Financial Services - Capital Markets", peg: 0.564, trailPE: 59.97, fwdPE: 142.93, price: 104.34},
+            {company: "IDEXX Laboratories, Inc.", ticker: "IDXX", industry: "Healthcare - Diagnostics & Research", peg: 4.249, trailPE: 48.18, fwdPE: 43.55, price: 520.87},
+            {company: "Illumina, Inc.", ticker: "ILMN", industry: "Healthcare - Diagnostics & Research", peg: null, trailPE: null, fwdPE: 21.45, price: 94.80},
+            {company: "Intel Corporation", ticker: "INTC", industry: "Technology - Semiconductors", peg: null, trailPE: null, fwdPE: 23.98, price: 23.26},
+            {company: "Intuit Inc.", ticker: "INTU", industry: "Technology - Software - Application", peg: 1.954, trailPE: 62.24, fwdPE: 34.35, price: 763.69},
+            {company: "Intuitive Surgical, Inc.", ticker: "ISRG", industry: "Healthcare - Medical Instruments & Supplies", peg: 3.663, trailPE: 75.35, fwdPE: 65.66, price: 516.12},
+            {company: "JD.com, Inc.", ticker: "JD", industry: "Consumer Cyclical - Internet Retail", peg: 0.140, trailPE: 8.13, fwdPE: 8.07, price: 33.40},
+            {company: "Keurig Dr Pepper Inc.", ticker: "KDP", industry: "Consumer Defensive - Beverages - Non-Alcoholic", peg: 1.030, trailPE: 30.29, fwdPE: 16.25, price: 33.32},
+            {company: "KLA Corporation", ticker: "KLAC", industry: "Technology - Semiconductor Equipment & Materials", peg: 1.749, trailPE: 34.14, fwdPE: 28.57, price: 937.76},
+            {company: "Lucid Group, Inc.", ticker: "LCID", industry: "Consumer Cyclical - Auto Manufacturers", peg: null, trailPE: null, fwdPE: -3.20, price: 2.82},
+            {company: "Logitech International S.A.", ticker: "LOGI", industry: "Technology - Computer Hardware", peg: 2.130, trailPE: 23.03, fwdPE: 20.28, price: 95.10},
+            {company: "Lam Research Corporation", ticker: "LRCX", industry: "Technology - Semiconductor Equipment & Materials", peg: 1.494, trailPE: 28.34, fwdPE: 23.83, price: 101.74},
+            {company: "lululemon athletica inc.", ticker: "LULU", industry: "Consumer Cyclical - Apparel Retail", peg: 0.978, trailPE: 15.17, fwdPE: 14.95, price: 223.21},
+            {company: "Microchip Technology Incorporated", ticker: "MCHP", industry: "Technology - Semiconductors", peg: null, trailPE: null, fwdPE: 28.40, price: 73.85},
+            {company: "Mondelez International, Inc.", ticker: "MDLZ", industry: "Consumer Defensive - Confectioners", peg: 5.684, trailPE: 25.81, fwdPE: 20.24, price: 69.42},
+            {company: "MercadoLibre, Inc.", ticker: "MELI", industry: "Consumer Cyclical - Internet Retail", peg: 1.564, trailPE: 58.67, fwdPE: 49.17, price: 2379.06},
+            {company: "Meta Platforms, Inc.", ticker: "META", industry: "Communication Services - Internet Content & Information", peg: 2.327, trailPE: 27.88, fwdPE: 28.18, price: 712.97},
+            {company: "Monster Beverage Corporation", ticker: "MNST", industry: "Consumer Defensive - Beverages - Non-Alcoholic", peg: 1.924, trailPE: 39.10, fwdPE: 31.78, price: 59.43},
+            {company: "Monolithic Power Systems, Inc.", ticker: "MPWR", industry: "Technology - Semiconductors", peg: 0.406, trailPE: 19.33, fwdPE: 42.19, price: 724.77},
+            {company: "Moderna, Inc.", ticker: "MRNA", industry: "Healthcare - Biotechnology", peg: null, trailPE: null, fwdPE: -3.56, price: 30.97},
+            {company: "Marvell Technology, Inc.", ticker: "MRVL", industry: "Technology - Semiconductors", peg: null, trailPE: null, fwdPE: 29.22, price: 73.06},
+            {company: "Microsoft Corporation", ticker: "MSFT", industry: "Technology - Software - Infrastructure", peg: 2.386, trailPE: 39.36, fwdPE: 34.12, price: 510.06},
+            {company: "Netflix, Inc.", ticker: "NFLX", industry: "Communication Services - Entertainment", peg: 2.281, trailPE: 52.57, fwdPE: 51.86, price: 1233.27},
+            {company: "ServiceNow, Inc.", ticker: "NOW", industry: "Technology - Software - Application", peg: 2.143, trailPE: 131.14, fwdPE: 57.48, price: 959.91},
+            {company: "NetEase, Inc.", ticker: "NTES", industry: "Communication Services - Electronic Gaming & Multimedia", peg: 2.260, trailPE: 19.62, fwdPE: 18.26, price: 137.35},
+            {company: "NVIDIA Corporation", ticker: "NVDA", industry: "Technology - Semiconductors", peg: 1.672, trailPE: 55.28, fwdPE: 41.60, price: 171.38},
+            {company: "NXP Semiconductors N.V.", ticker: "NXPI", industry: "Technology - Semiconductors", peg: 1.516, trailPE: 24.89, fwdPE: 17.47, price: 228.27},
+            {company: "Old Dominion Freight Line, Inc.", ticker: "ODFL", industry: "Industrials - Trucking", peg: 3.065, trailPE: 30.63, fwdPE: 27.67, price: 163.25},
+            {company: "Okta, Inc.", ticker: "OKTA", industry: "Technology - Software - Infrastructure", peg: 0.505, trailPE: 147.48, fwdPE: 33.06, price: 95.86},
+            {company: "Oracle Corporation", ticker: "ORCL", industry: "Technology - Software - Infrastructure", peg: 2.561, trailPE: 56.12, fwdPE: 34.01, price: 243.54},
+            {company: "Palo Alto Networks, Inc.", ticker: "PANW", industry: "Technology - Software - Infrastructure", peg: 2.436, trailPE: 114.87, fwdPE: 27.76, price: 199.88},
+            {company: "Paychex, Inc.", ticker: "PAYX", industry: "Technology - Software - Application", peg: 2.543, trailPE: 31.15, fwdPE: 26.97, price: 142.66},
+            {company: "PDD Holdings Inc.", ticker: "PDD", industry: "Consumer Cyclical - Internet Retail", peg: 1.311, trailPE: 11.97, fwdPE: 7.92, price: 111.66},
+            {company: "PepsiCo, Inc.", ticker: "PEP", industry: "Consumer Defensive - Beverages - Non-Alcoholic", peg: 3.234, trailPE: 25.81, fwdPE: 16.42, price: 141.70},
+            {company: "PayPal Holdings, Inc.", ticker: "PYPL", industry: "Financial Services - Credit Services", peg: 1.002, trailPE: 16.81, fwdPE: 15.30, price: 74.82},
+            {company: "QUALCOMM Incorporated", ticker: "QCOM", industry: "Technology - Semiconductors", peg: 2.224, trailPE: 16.22, fwdPE: 13.00, price: 158.97},
+            {company: "Regeneron Pharmaceuticals, Inc.", ticker: "REGN", industry: "Healthcare - Biotechnology", peg: 1.147, trailPE: 13.87, fwdPE: 12.04, price: 545.53},
+            {company: "Rivian Automotive, Inc.", ticker: "RIVN", industry: "Consumer Cyclical - Auto Manufacturers", peg: null, trailPE: null, fwdPE: -5.00, price: 13.70},
+            {company: "Roku, Inc.", ticker: "ROKU", industry: "Communication Services - Entertainment", peg: null, trailPE: null, fwdPE: -145.54, price: 91.69},
+            {company: "Starbucks Corporation", ticker: "SBUX", industry: "Consumer Cyclical - Restaurants", peg: 2.480, trailPE: 33.69, fwdPE: 24.91, price: 92.66},
+            {company: "Sirius XM Holdings Inc.", ticker: "SIRI", industry: "Communication Services - Entertainment", peg: null, trailPE: null, fwdPE: 7.57, price: 23.23},
+            {company: "Synopsys, Inc.", ticker: "SNPS", industry: "Technology - Software - Infrastructure", peg: 12.07, trailPE: 68.38, fwdPE: 39.78, price: 591.46},
+            {company: "Atlassian Corporation", ticker: "TEAM", industry: "Technology - Software - Application", peg: 2.287, trailPE: null, fwdPE: 47.29, price: 194.36},
+            {company: "T-Mobile US, Inc.", ticker: "TMUS", industry: "Communication Services - Telecom Services", peg: 1.057, trailPE: 22.69, fwdPE: 21.80, price: 232.62},
+            {company: "Tesla, Inc.", ticker: "TSLA", industry: "Consumer Cyclical - Auto Manufacturers", peg: 5.765, trailPE: 187.71, fwdPE: 101.39, price: 328.49},
+            {company: "Texas Instruments Incorporated", ticker: "TXN", industry: "Technology - Semiconductors", peg: 2.301, trailPE: 40.56, fwdPE: 36.49, price: 214.57},
+            {company: "Verisk Analytics, Inc.", ticker: "VRSK", industry: "Industrials - Consulting Services", peg: 4.055, trailPE: 44.12, fwdPE: 41.09, price: 299.56},
+            {company: "Vertex Pharmaceuticals Incorporated", ticker: "VRTX", industry: "Healthcare - Biotechnology", peg: null, trailPE: null, fwdPE: 24.43, price: 458.49},
+            {company: "Walgreens Boots Alliance, Inc.", ticker: "WBA", industry: "Healthcare - Pharmaceutical Retailers", peg: null, trailPE: null, fwdPE: 7.84, price: 11.52},
+            {company: "Workday, Inc.", ticker: "WDAY", industry: "Technology - Software - Application", peg: 1.023, trailPE: 130.56, fwdPE: 28.16, price: 233.71},
+            {company: "Xcel Energy Inc.", ticker: "XEL", industry: "Utilities - Utilities - Regulated Electric", peg: 2.806, trailPE: 21.05, fwdPE: 18.69, price: 71.57},
+            {company: "Zoom Communications Inc.", ticker: "ZM", industry: "Technology - Software - Application", peg: 1.196, trailPE: 22.37, fwdPE: 14.08, price: 74.48},
+            {company: "Zscaler, Inc.", ticker: "ZS", industry: "Technology - Software - Infrastructure", peg: 3.896, trailPE: null, fwdPE: 81.02, price: 288.43}
+        ];
+
+        // =============================================
+        // 유틸리티 함수들
+        // =============================================
+        class Utils {
+            static formatNumber(value) {
+                if (value === null || value === undefined) return "N/A";
+                if (typeof value === 'number') {
+                    return value.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 3
+                    });
+                }
+                return value;
+            }
+
+            static formatPrice(price) {
+                if (price === null || price === undefined) return "N/A";
+                return `$${price.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+            }
+
+            static getPegClass(peg) {
+                if (peg === null || peg === undefined) return 'peg-na';
+                if (peg < 1.0) return 'peg-excellent';
+                if (peg <= 2.0) return 'peg-good';
+                return 'peg-poor';
+            }
+
+            static debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+        }
+
+        // =============================================
+        // 테이블 관리 클래스
+        // =============================================
+        class TableManager {
+            static sortDirection = {};
+            
+            static init() {
+                this.renderTable();
+                this.sortTable(3); // PEG 컬럼으로 기본 정렬
+            }
+
+            static renderTable() {
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+
+                STOCK_DATA.forEach(stock => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('role', 'row');
+                    
+                    row.innerHTML = `
+                        <td class="cell-company" role="gridcell">${stock.company}</td>
+                        <td class="cell-ticker" role="gridcell">${stock.ticker}</td>
+                        <td class="cell-industry" role="gridcell">${stock.industry}</td>
+                        <td class="cell-peg ${Utils.getPegClass(stock.peg)}" role="gridcell">
+                            ${Utils.formatNumber(stock.peg)}
+                        </td>
+                        <td class="cell-pe" role="gridcell">${Utils.formatNumber(stock.trailPE)}</td>
+                        <td class="cell-pe" role="gridcell">${Utils.formatNumber(stock.fwdPE)}</td>
+                        <td class="cell-price" role="gridcell">${Utils.formatPrice(stock.price)}</td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            }
+
+            static sortTable(columnIndex) {
+                const table = document.getElementById('stockTable');
+                const tbody = table.getElementsByTagName('tbody')[0];
+                const rows = Array.from(tbody.getElementsByTagName('tr'));
+                const headers = table.getElementsByTagName('th');
+                
+                // 정렬 방향 토글
+                const currentDirection = this.sortDirection[columnIndex] || 'asc';
+                const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+                this.sortDirection[columnIndex] = newDirection;
+                
+                // 모든 헤더에서 정렬 클래스 제거
+                Array.from(headers).forEach(header => {
+                    header.classList.remove('sort-asc', 'sort-desc');
+                    header.setAttribute('aria-sort', 'none');
+                });
+                
+                // 현재 헤더에 정렬 클래스 추가
+                headers[columnIndex].classList.add(`sort-${newDirection}`);
+                headers[columnIndex].setAttribute('aria-sort', newDirection === 'asc' ? 'ascending' : 'descending');
+                
+                // 정렬 함수
+                const getValue = (row) => {
+                    const cellText = row.getElementsByTagName('td')[columnIndex].textContent.trim();
+                    
+                    // 숫자 컬럼 처리
+                    if (columnIndex >= 3) {
+                        const cleanText = cellText.replace(/[$,]/g, '');
+                        if (cleanText === 'N/A') return newDirection === 'asc' ? Infinity : -Infinity;
+                        return parseFloat(cleanText) || 0;
+                    }
+                    
+                    return cellText;
+                };
+                
+                // 행 정렬
+                rows.sort((a, b) => {
+                    const aValue = getValue(a);
+                    const bValue = getValue(b);
+                    
+                    if (typeof aValue === 'number' && typeof bValue === 'number') {
+                        return newDirection === 'asc' ? aValue - bValue : bValue - aValue;
+                    }
+                    
+                    const result = String(aValue).localeCompare(String(bValue), 'ko');
+                    return newDirection === 'asc' ? result : -result;
+                });
+                
+                // 정렬된 행들을 테이블에 다시 추가
+                rows.forEach(row => tbody.appendChild(row));
+                
+                // 접근성을 위한 정렬 완료 알림
+                this.announceSort(columnIndex, newDirection);
+            }
+
+            static handleKeyPress(event, columnIndex) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    this.sortTable(columnIndex);
+                }
+            }
+
+            static announceSort(columnIndex, direction) {
+                const columnNames = ['Company', 'Ticker', 'Industry', 'PEG', 'Trail P/E', 'Fwd P/E', 'Price'];
+                const directionText = direction === 'asc' ? '오름차순' : '내림차순';
+                
+                // 스크린 리더용 알림
+                const announcement = document.createElement('div');
+                announcement.setAttribute('aria-live', 'polite');
+                announcement.setAttribute('aria-atomic', 'true');
+                announcement.className = 'sr-only';
+                announcement.textContent = `${columnNames[columnIndex]} 컬럼이 ${directionText}으로 정렬되었습니다.`;
+                
+                document.body.appendChild(announcement);
+                setTimeout(() => document.body.removeChild(announcement), 1000);
+            }
+        }
+
+        // =============================================
+        // 앱 초기화
+        // =============================================
+        class App {
+            static init() {
+                // DOM 로드 완료 시 초기화
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => this.setup());
+                } else {
+                    this.setup();
+                }
+            }
+
+            static setup() {
+                // 테이블 초기화
+                TableManager.init();
+                
+                // 성능 모니터링
+                this.addPerformanceMonitoring();
+                
+                // 키보드 네비게이션 개선
+                this.enhanceKeyboardNavigation();
+                
+                console.log('📊 NASDAQ 100 PEG Analysis Dashboard 초기화 완료');
+            }
+
+            static addPerformanceMonitoring() {
+                // 페이지 로드 성능 측정
+                window.addEventListener('load', () => {
+                    if ('performance' in window) {
+                        const perfData = window.performance.timing;
+                        const loadTime = perfData.loadEventEnd - perfData.navigationStart;
+                        console.log(`📈 페이지 로드 시간: ${loadTime}ms`);
+                    }
+                });
+            }
+
+            static enhanceKeyboardNavigation() {
+                // 테이블 행 키보드 네비게이션
+                const table = document.getElementById('stockTable');
+                if (table) {
+                    table.addEventListener('keydown', (e) => {
+                        if (e.target.tagName === 'TH') {
+                            this.handleTableHeaderNavigation(e);
+                        }
+                    });
+                }
+            }
+
+            static handleTableHeaderNavigation(event) {
+                const headers = Array.from(document.querySelectorAll('th[tabindex="0"]'));
+                const currentIndex = headers.indexOf(event.target);
+                
+                let newIndex = currentIndex;
+                
+                switch (event.key) {
+                    case 'ArrowLeft':
+                        newIndex = Math.max(0, currentIndex - 1);
+                        break;
+                    case 'ArrowRight':
+                        newIndex = Math.min(headers.length - 1, currentIndex + 1);
+                        break;
+                    case 'Home':
+                        newIndex = 0;
+                        break;
+                    case 'End':
+                        newIndex = headers.length - 1;
+                        break;
+                    default:
+                        return;
+                }
+                
+                if (newIndex !== currentIndex) {
+                    event.preventDefault();
+                    headers[newIndex].focus();
+                }
+            }
+        }
+
+        // =============================================
+        // 글로벌 노출 (하위 호환성)
+        // =============================================
+        window.TableManager = TableManager;
+        window.Utils = Utils;
+
+        // =============================================
+        // PWA 기능 추가
+        // =============================================
+        class PWAManager {
+            static init() {
+                this.registerServiceWorker();
+                this.setupInstallPrompt();
+                this.checkExpiry();
+                this.handleServiceWorkerMessages();
+            }
+
+            // Service Worker 등록
+            static async registerServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    try {
+                        const registration = await navigator.serviceWorker.register('/sw.js');
+                        console.log('✅ Service Worker 등록 성공:', registration.scope);
+                        
+                        // 업데이트 확인
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    this.showUpdateNotification();
+                                }
+                            });
+                        });
+                    } catch (error) {
+                        console.error('❌ Service Worker 등록 실패:', error);
+                    }
+                }
+            }
+
+            // PWA 설치 프롬프트 설정
+            static setupInstallPrompt() {
+                let deferredPrompt;
+
+                // PWA 설치 이벤트 감지
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    console.log('📲 PWA 설치 가능');
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    this.showInstallBanner(deferredPrompt);
+                });
+
+                // 앱 설치 후 처리
+                window.addEventListener('appinstalled', (e) => {
+                    console.log('🎉 PWA 설치 완료');
+                    this.hideInstallBanner();
+                    this.saveInstallTime();
+                    this.showInstallSuccess();
+                });
+            }
+
+            // 설치 배너 표시
+            static showInstallBanner(deferredPrompt) {
+                const banner = document.createElement('div');
+                banner.id = 'pwa-install-banner';
+                banner.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+                        color: white;
+                        padding: 15px 20px;
+                        text-align: center;
+                        font-size: 14px;
+                        font-weight: 500;
+                        z-index: 10000;
+                        box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+                        transform: translateY(-100%);
+                        transition: transform 0.3s ease;
+                    ">
+                        <div style="max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <span>📱 <strong>나스닥 100 PEG 분석</strong>을 홈 화면에 추가하세요!</span>
+                            <div style="display: flex; gap: 10px;">
+                                <button id="install-app-btn" style="
+                                    background: rgba(255,255,255,0.2);
+                                    border: 1px solid rgba(255,255,255,0.3);
+                                    color: white;
+                                    padding: 8px 16px;
+                                    border-radius: 6px;
+                                    font-size: 13px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                                    설치
+                                </button>
+                                <button id="close-banner-btn" style="
+                                    background: transparent;
+                                    border: none;
+                                    color: rgba(255,255,255,0.8);
+                                    font-size: 18px;
+                                    cursor: pointer;
+                                    padding: 4px;
+                                    line-height: 1;
+                                ">×</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(banner);
+
+                // 애니메이션으로 배너 표시
+                setTimeout(() => {
+                    banner.firstElementChild.style.transform = 'translateY(0)';
+                }, 100);
+
+                // 설치 버튼 클릭 이벤트
+                document.getElementById('install-app-btn').addEventListener('click', async () => {
+                    try {
+                        await deferredPrompt.prompt();
+                        const choiceResult = await deferredPrompt.userChoice;
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('✅ 사용자가 PWA 설치를 승인했습니다');
+                        } else {
+                            console.log('❌ 사용자가 PWA 설치를 거부했습니다');
+                        }
+                        deferredPrompt = null;
+                        this.hideInstallBanner();
+                    } catch (error) {
+                        console.error('❌ PWA 설치 중 오류:', error);
+                    }
+                });
+
+                // 닫기 버튼 클릭 이벤트
+                document.getElementById('close-banner-btn').addEventListener('click', () => {
+                    this.hideInstallBanner();
+                });
+            }
+
+            // 설치 배너 숨기기
+            static hideInstallBanner() {
+                const banner = document.getElementById('pwa-install-banner');
+                if (banner) {
+                    banner.firstElementChild.style.transform = 'translateY(-100%)';
+                    setTimeout(() => banner.remove(), 300);
+                }
+            }
+
+            // 설치 성공 메시지
+            static showInstallSuccess() {
+                const message = document.createElement('div');
+                message.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: rgba(0, 0, 0, 0.9);
+                        color: white;
+                        padding: 30px;
+                        border-radius: 15px;
+                        text-align: center;
+                        z-index: 10001;
+                        max-width: 300px;
+                        backdrop-filter: blur(10px);
+                    ">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🎉</div>
+                        <h3 style="margin: 0 0 10px 0; font-size: 18px;">설치 완료!</h3>
+                        <p style="margin: 0; font-size: 14px; color: #ccc;">
+                            앱이 홈 화면에 추가되었습니다.<br>
+                            60일간 사용 가능합니다.
+                        </p>
+                    </div>
+                `;
+                document.body.appendChild(message);
+                setTimeout(() => message.remove(), 3000);
+            }
+
+            // 설치 시간 저장
+            static saveInstallTime() {
+                try {
+                    const installTime = Date.now();
+                    localStorage.setItem('pwa-install-time', installTime.toString());
+                    console.log('💾 PWA 설치 시간 저장:', new Date(installTime).toLocaleString('ko-KR'));
+                } catch (error) {
+                    console.error('❌ 설치 시간 저장 실패:', error);
+                }
+            }
+
+            // 만료 확인
+            static checkExpiry() {
+                try {
+                    const installTimeStr = localStorage.getItem('pwa-install-time');
+                    if (installTimeStr) {
+                        const installTime = parseInt(installTimeStr);
+                        const currentTime = Date.now();
+                        const daysPassed = Math.floor((currentTime - installTime) / (24 * 60 * 60 * 1000));
+                        const daysRemaining = 60 - daysPassed;
+
+                        if (daysRemaining <= 7 && daysRemaining > 0) {
+                            this.showExpiryWarning(daysRemaining);
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ 만료 확인 중 오류:', error);
+                }
+            }
+
+            // 만료 경고 표시
+            static showExpiryWarning(daysRemaining) {
+                const warning = document.createElement('div');
+                warning.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        bottom: 20px;
+                        left: 20px;
+                        right: 20px;
+                        background: rgba(255, 149, 0, 0.95);
+                        color: white;
+                        padding: 15px;
+                        border-radius: 10px;
+                        text-align: center;
+                        z-index: 10000;
+                        font-size: 14px;
+                        font-weight: 500;
+                        box-shadow: 0 4px 20px rgba(255, 149, 0, 0.3);
+                    ">
+                        ⚠️ <strong>알림:</strong> PWA 사용 기간이 ${daysRemaining}일 남았습니다.
+                        <button onclick="this.parentElement.parentElement.remove()" style="
+                            float: right;
+                            background: none;
+                            border: none;
+                            color: white;
+                            font-size: 16px;
+                            cursor: pointer;
+                            padding: 0;
+                            margin-left: 10px;
+                        ">×</button>
+                    </div>
+                `;
+                document.body.appendChild(warning);
+                setTimeout(() => warning.remove(), 10000);
+            }
+
+            // Service Worker 메시지 처리
+            static handleServiceWorkerMessages() {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.addEventListener('message', (event) => {
+                        if (event.data.type === 'APP_EXPIRED') {
+                            this.showExpiryModal();
+                        }
+                    });
+                }
+            }
+
+            // 만료 모달 표시
+            static showExpiryModal() {
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0, 0, 0, 0.8);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 10002;
+                    ">
+                        <div style="
+                            background: white;
+                            padding: 40px;
+                            border-radius: 20px;
+                            text-align: center;
+                            max-width: 400px;
+                            margin: 20px;
+                        ">
+                            <div style="font-size: 64px; margin-bottom: 20px;">📅</div>
+                            <h2 style="margin: 0 0 15px 0; color: #333;">앱 사용 기간 만료</h2>
+                            <p style="margin: 0 0 30px 0; color: #666; line-height: 1.5;">
+                                60일 사용 기간이 만료되었습니다.<br>
+                                새로운 버전을 다운로드해주세요.
+                            </p>
+                            <button onclick="window.location.reload()" style="
+                                background: #007aff;
+                                color: white;
+                                border: none;
+                                padding: 15px 30px;
+                                border-radius: 10px;
+                                font-size: 16px;
+                                font-weight: 600;
+                                cursor: pointer;
+                            ">새로 다운로드</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // 업데이트 알림 표시
+            static showUpdateNotification() {
+                const notification = document.createElement('div');
+                notification.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: #34c759;
+                        color: white;
+                        padding: 15px 20px;
+                        border-radius: 10px;
+                        font-size: 14px;
+                        font-weight: 500;
+                        z-index: 10000;
+                        box-shadow: 0 4px 20px rgba(52, 199, 89, 0.3);
+                        max-width: 300px;
+                    ">
+                        🔄 <strong>업데이트 가능</strong><br>
+                        <small>새로운 버전이 백그라운드에서 설치되었습니다.</small>
+                        <button onclick="window.location.reload()" style="
+                            background: rgba(255,255,255,0.2);
+                            border: 1px solid rgba(255,255,255,0.3);
+                            color: white;
+                            padding: 5px 10px;
+                            border-radius: 5px;
+                            font-size: 12px;
+                            cursor: pointer;
+                            margin-top: 8px;
+                            display: block;
+                            width: 100%;
+                        ">지금 적용</button>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 8000);
+            }
+        }
+
+        // =============================================
+        // 앱 시작
+        // =============================================
+        App.init();
+        PWAManager.init();
+    </script>
+</body>
+</html>
+    

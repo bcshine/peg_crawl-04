@@ -1,0 +1,1474 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나스닥 100 주요 종목 분석 (PEG)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .update-info {
+            background: transparent !important;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 15px 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8em;
+            line-height: 1.6;
+        }
+        
+        .update-info * {
+            background: transparent !important;
+        }
+        
+        .update-main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .update-badge {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.65em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+        }
+        
+        .update-time {
+            font-weight: 600;
+            color: white;
+            background: transparent;
+            font-size: 0.9em;
+        }
+        
+        .update-schedule {
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            font-size: 0.85em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .schedule-icon {
+            font-size: 0.9em;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .legend {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .legend h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .legend-items {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+                 .legend-color {
+             width: 20px;
+             height: 20px;
+             border-radius: 4px;
+             border: 2px solid #ddd;
+         }
+         
+         .data-disclaimer {
+             margin-top: 15px;
+             padding: 12px;
+             background: #fff3cd;
+             border: 1px solid #ffeaa7;
+             border-radius: 6px;
+             font-size: 0.9em;
+         }
+         
+         .data-disclaimer p {
+             margin: 0;
+             color: #856404;
+         }
+        
+                 .table-wrapper {
+             padding: 30px;
+             border-radius: 8px;
+             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+             background: white;
+         }
+         
+         .table-container {
+             width: 100%;
+             overflow-x: auto;
+             overflow-y: visible;
+             -webkit-overflow-scrolling: touch;
+             border-radius: 8px;
+             border: 1px solid #dee2e6;
+         }
+         
+         .table-header {
+             position: sticky;
+             top: 0;
+             z-index: 1000;
+             background: white;
+             border-radius: 8px 8px 0 0;
+             overflow: hidden;
+         }
+         
+         .table-header table {
+             margin: 0;
+             border-radius: 8px 8px 0 0;
+         }
+         
+         .table-body-container {
+             height: 60vh;
+             overflow-y: auto;
+             overflow-x: visible;
+             border-radius: 0 0 8px 8px;
+         }
+         
+         table {
+             width: 100%;
+             border-collapse: separate;
+             border-spacing: 0;
+             background: white;
+             min-width: 1200px;
+         }
+         
+         /* 컬럼 넓이 최적화 */
+         th:nth-child(1), td:nth-child(1) { width: 20%; }  /* 종목명 */
+         th:nth-child(2), td:nth-child(2) { width: 8%; }   /* 티커 */
+         th:nth-child(3), td:nth-child(3) { width: 25%; }  /* 산업군 */
+         th:nth-child(4), td:nth-child(4) { width: 12%; }  /* 현재가격 */
+         th:nth-child(5), td:nth-child(5) { width: 12%; }  /* Trail P/E */
+         th:nth-child(6), td:nth-child(6) { width: 12%; }  /* For P/E */
+         th:nth-child(7), td:nth-child(7) { width: 11%; }  /* PEG */
+          
+         th {
+             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+             color: white;
+             padding: 15px 10px;
+             text-align: left;
+             font-weight: 600;
+             cursor: pointer;
+             transition: background 0.3s ease;
+             user-select: none;
+             border: none;
+             position: relative;
+         }
+         
+         th:first-child {
+             border-top-left-radius: 8px;
+         }
+         
+         th:last-child {
+             border-top-right-radius: 8px;
+         }
+        
+        th:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        }
+        
+        th::after {
+            content: '↕️';
+            position: absolute;
+            right: 8px;
+            font-size: 0.8em;
+        }
+        
+        th.sort-asc::after {
+            content: '🔼';
+        }
+        
+        th.sort-desc::after {
+            content: '🔽';
+        }
+        
+                 tbody {
+             background: white;
+         }
+         
+         td {
+             padding: 12px 10px;
+             border-bottom: 1px solid #eee;
+             transition: background 0.2s ease;
+             background: white;
+         }
+         
+         tbody tr:hover td {
+             background: #f8f9fa !important;
+         }
+         
+         tbody tr:nth-child(even) td {
+             background: #fafafa;
+         }
+         
+         tbody tr:nth-child(even):hover td {
+             background: #f0f0f0 !important;
+         }
+        
+                 .ticker {
+             font-weight: bold;
+             color: #2c3e50;
+             text-align: center;
+         }
+         
+         .industry {
+             font-size: 0.9em;
+             color: #5a6c7d;
+             text-align: left;
+         }
+         
+         .price {
+             font-weight: bold;
+             color: #27ae60;
+             text-align: right;
+         }
+        
+        .pe-ratio {
+            text-align: right;
+        }
+        
+        .peg-ratio {
+            text-align: right;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 4px 8px;
+        }
+        
+        .peg-good {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        
+        .peg-moderate {
+            background: #fffbf0;
+            color: #f57f17;
+            border: 1px solid #ffe082;
+        }
+        
+        .peg-high {
+            background: #ffebee;
+            color: #d32f2f;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .peg-na {
+            background: #f5f5f5;
+            color: #757575;
+        }
+        
+        .update-time {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        
+                 @media (max-width: 768px) {
+             .header h1 {
+                 font-size: 1.8em;
+             }
+             
+             .legend-items {
+                 flex-direction: column;
+                 gap: 15px;
+             }
+             
+             .table-wrapper {
+                 padding: 15px;
+             }
+             
+             .table-container {
+                 border-radius: 6px;
+                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+             }
+             
+             table {
+                 min-width: 1000px;
+             }
+             
+             th, td {
+                 padding: 8px 6px;
+                 font-size: 0.8em;
+                 white-space: nowrap;
+             }
+             
+             /* 모바일에서 컬럼 넓이 재조정 */
+             th:nth-child(1), td:nth-child(1) { min-width: 180px; }  /* 종목명 */
+             th:nth-child(2), td:nth-child(2) { min-width: 80px; }   /* 티커 */
+             th:nth-child(3), td:nth-child(3) { min-width: 150px; }  /* 산업군 */
+             th:nth-child(4), td:nth-child(4) { min-width: 100px; }  /* 현재가격 */
+             th:nth-child(5), td:nth-child(5) { min-width: 100px; }  /* Trail P/E */
+             th:nth-child(6), td:nth-child(6) { min-width: 100px; }  /* For P/E */
+             th:nth-child(7), td:nth-child(7) { min-width: 100px; }  /* PEG */
+             
+             .industry {
+                 font-size: 0.75em;
+             }
+             
+             /* 업데이트 정보 모바일 최적화 */
+             .update-info {
+                 padding: 12px 15px;
+                 margin-top: 15px;
+                 font-size: 0.75em;
+             }
+             
+             .update-main {
+                 flex-direction: column;
+                 gap: 6px;
+                 margin-bottom: 10px;
+             }
+             
+             .update-badge {
+                 font-size: 0.6em;
+                 margin-bottom: 4px;
+             }
+             
+             .update-schedule {
+                 font-size: 0.7em;
+             }
+             
+             .scroll-hint {
+                 text-align: center;
+                 padding: 10px;
+                 font-size: 0.85em;
+                 color: #666;
+                 background: #f8f9fa;
+                 border-top: 1px solid #dee2e6;
+                 margin-top: 5px;
+             }
+         }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 나스닥 100 주요 종목 분석 (PEG)</h1>
+            <p>주요 기술주의 P/E 및 PEG 비율 분석 리포트</p>
+            <div class="update-info">
+                <div class="update-main">
+                    <span class="update-badge">LIVE</span>
+                    <span>마지막 업데이트:</span>
+                    <span class="update-time">2025년 07월 22일 10:40 KST</span>
+                </div>
+                <div class="update-schedule">
+                    <span class="schedule-icon">⏰</span>
+                    <span>매일 오전 9시 자동 업데이트</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <h3>🎯 PEG 비율 해석 가이드</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color peg-good"></div>
+                    <span><strong>1.0 미만</strong> - 저평가 (양호)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color peg-moderate"></div>
+                    <span><strong>1.0 ~ 2.0</strong> - 적정 평가 (보통)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color peg-high"></div>
+                    <span><strong>2.0 이상</strong> - 고평가 (주의)</span>
+                </div>
+            </div>
+            <div class="data-disclaimer">
+                <p><strong>⚠️ 데이터 안내:</strong> 이곳의 데이터는 수집방법에 따라 차이가 있습니다. 구체적인 정보는 증권앱에서 확인하십시오.</p>
+            </div>
+        </div>
+        
+                 <div class="table-wrapper">
+             <div class="table-container">
+                 <div class="table-header">
+                     <table>
+                         <thead>
+                             <tr>
+                                 <th onclick="sortTable(0)">종목명</th>
+                                 <th onclick="sortTable(1)">티커</th>
+                                 <th onclick="sortTable(2)">산업군</th>
+                                 <th onclick="sortTable(3)">현재가격</th>
+                                 <th onclick="sortTable(4)">Trail P/E</th>
+                                 <th onclick="sortTable(5)">For P/E</th>
+                                 <th onclick="sortTable(6)">PEG</th>
+                             </tr>
+                         </thead>
+                     </table>
+                 </div>
+                 <div class="table-body-container">
+                     <table id="stockTable">
+                         <tbody>
+                             
+        <tr>
+            <td>Apple Inc.</td>
+            <td class="ticker">AAPL</td>
+            <td class="industry">Consumer Electronics</td>
+            <td class="price">$212.48</td>
+            <td class="pe-ratio">33.10</td>
+            <td class="pe-ratio">25.57</td>
+            <td class="peg-ratio peg-moderate">1.97</td>
+        </tr>
+        
+        <tr>
+            <td>Airbnb, Inc.</td>
+            <td class="ticker">ABNB</td>
+            <td class="industry">Travel Services</td>
+            <td class="price">$138.07</td>
+            <td class="pe-ratio">35.04</td>
+            <td class="pe-ratio">30.68</td>
+            <td class="peg-ratio peg-moderate">1.99</td>
+        </tr>
+        
+        <tr>
+            <td>Adobe Inc.</td>
+            <td class="ticker">ADBE</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$367.68</td>
+            <td class="pe-ratio">23.54</td>
+            <td class="pe-ratio">17.89</td>
+            <td class="peg-ratio peg-moderate">1.18</td>
+        </tr>
+        
+        <tr>
+            <td>Analog Devices, Inc.</td>
+            <td class="ticker">ADI</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$240.48</td>
+            <td class="pe-ratio">65.35</td>
+            <td class="pe-ratio">31.89</td>
+            <td class="peg-ratio peg-moderate">1.41</td>
+        </tr>
+        
+        <tr>
+            <td>Automatic Data Processing, Inc.</td>
+            <td class="ticker">ADP</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$300.90</td>
+            <td class="pe-ratio">30.77</td>
+            <td class="pe-ratio">27.68</td>
+            <td class="peg-ratio peg-high">3.19</td>
+        </tr>
+        
+        <tr>
+            <td>Autodesk, Inc.</td>
+            <td class="ticker">ADSK</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$295.16</td>
+            <td class="pe-ratio">63.34</td>
+            <td class="pe-ratio">32.15</td>
+            <td class="peg-ratio peg-moderate">1.75</td>
+        </tr>
+        
+        <tr>
+            <td>Applied Materials, Inc.</td>
+            <td class="ticker">AMAT</td>
+            <td class="industry">Semiconductor Equipment & Materials</td>
+            <td class="price">$192.61</td>
+            <td class="pe-ratio">23.40</td>
+            <td class="pe-ratio">19.88</td>
+            <td class="peg-ratio peg-moderate">1.89</td>
+        </tr>
+        
+        <tr>
+            <td>Advanced Micro Devices, Inc.</td>
+            <td class="ticker">AMD</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$157.00</td>
+            <td class="pe-ratio">114.60</td>
+            <td class="pe-ratio">30.78</td>
+            <td class="peg-ratio peg-good">0.784</td>
+        </tr>
+        
+        <tr>
+            <td>Amgen Inc.</td>
+            <td class="ticker">AMGN</td>
+            <td class="industry">Drug Manufacturers - General</td>
+            <td class="price">$295.87</td>
+            <td class="pe-ratio">26.97</td>
+            <td class="pe-ratio">14.31</td>
+            <td class="peg-ratio peg-good">0.981</td>
+        </tr>
+        
+        <tr>
+            <td>Amazon.com, Inc.</td>
+            <td class="ticker">AMZN</td>
+            <td class="industry">Internet Retail</td>
+            <td class="price">$229.30</td>
+            <td class="pe-ratio">37.28</td>
+            <td class="pe-ratio">37.28</td>
+            <td class="peg-ratio peg-high">2.94</td>
+        </tr>
+        
+        <tr>
+            <td>ANSYS, Inc.</td>
+            <td class="ticker">ANSS</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$374.30</td>
+            <td class="pe-ratio">55.53</td>
+            <td class="pe-ratio">34.00</td>
+            <td class="peg-ratio peg-high">2.47</td>
+        </tr>
+        
+        <tr>
+            <td>ASML Holding N.V.</td>
+            <td class="ticker">ASML</td>
+            <td class="industry">Semiconductor Equipment & Materials</td>
+            <td class="price">$719.68</td>
+            <td class="pe-ratio">25.71</td>
+            <td class="pe-ratio">26.95</td>
+            <td class="peg-ratio peg-moderate">1.50</td>
+        </tr>
+        
+        <tr>
+            <td>Broadcom Inc.</td>
+            <td class="ticker">AVGO</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$288.21</td>
+            <td class="pe-ratio">104.80</td>
+            <td class="pe-ratio">46.71</td>
+            <td class="peg-ratio peg-moderate">1.33</td>
+        </tr>
+        
+        <tr>
+            <td>Baidu, Inc.</td>
+            <td class="ticker">BIDU</td>
+            <td class="industry">Internet Content & Information</td>
+            <td class="price">$88.81</td>
+            <td class="pe-ratio">8.78</td>
+            <td class="pe-ratio">8.01</td>
+            <td class="peg-ratio peg-good">0.194</td>
+        </tr>
+        
+        <tr>
+            <td>Biogen Inc.</td>
+            <td class="ticker">BIIB</td>
+            <td class="industry">Drug Manufacturers - General</td>
+            <td class="price">$122.68</td>
+            <td class="pe-ratio">12.12</td>
+            <td class="pe-ratio">7.36</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Booking Holdings Inc.</td>
+            <td class="ticker">BKNG</td>
+            <td class="industry">Travel Services</td>
+            <td class="price">$5677.15</td>
+            <td class="pe-ratio">35.43</td>
+            <td class="pe-ratio">27.05</td>
+            <td class="peg-ratio peg-moderate">1.64</td>
+        </tr>
+        
+        <tr>
+            <td>Cadence Design Systems, Inc.</td>
+            <td class="ticker">CDNS</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$316.32</td>
+            <td class="pe-ratio">80.28</td>
+            <td class="pe-ratio">46.18</td>
+            <td class="peg-ratio peg-high">3.36</td>
+        </tr>
+        
+        <tr>
+            <td>Charter Communications, Inc.</td>
+            <td class="ticker">CHTR</td>
+            <td class="industry">Telecom Services</td>
+            <td class="price">$388.89</td>
+            <td class="pe-ratio">10.85</td>
+            <td class="pe-ratio">10.87</td>
+            <td class="peg-ratio peg-good">0.406</td>
+        </tr>
+        
+        <tr>
+            <td>Comcast Corporation</td>
+            <td class="ticker">CMCSA</td>
+            <td class="industry">Telecom Services</td>
+            <td class="price">$35.01</td>
+            <td class="pe-ratio">8.62</td>
+            <td class="pe-ratio">7.99</td>
+            <td class="peg-ratio peg-moderate">1.61</td>
+        </tr>
+        
+        <tr>
+            <td>Coinbase Global, Inc.</td>
+            <td class="ticker">COIN</td>
+            <td class="industry">Financial Data & Stock Exchanges</td>
+            <td class="price">$413.63</td>
+            <td class="pe-ratio">77.60</td>
+            <td class="pe-ratio">115.86</td>
+            <td class="peg-ratio peg-high">124.89</td>
+        </tr>
+        
+        <tr>
+            <td>Costco Wholesale Corporation</td>
+            <td class="ticker">COST</td>
+            <td class="industry">Discount Stores</td>
+            <td class="price">$947.56</td>
+            <td class="pe-ratio">53.87</td>
+            <td class="pe-ratio">48.15</td>
+            <td class="peg-ratio peg-high">5.05</td>
+        </tr>
+        
+        <tr>
+            <td>Copart, Inc.</td>
+            <td class="ticker">CPRT</td>
+            <td class="industry">Specialty Business Services</td>
+            <td class="price">$46.03</td>
+            <td class="pe-ratio">30.48</td>
+            <td class="pe-ratio">26.45</td>
+            <td class="peg-ratio peg-high">2.27</td>
+        </tr>
+        
+        <tr>
+            <td>Salesforce, Inc.</td>
+            <td class="ticker">CRM</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$262.28</td>
+            <td class="pe-ratio">40.98</td>
+            <td class="pe-ratio">23.57</td>
+            <td class="peg-ratio peg-moderate">1.40</td>
+        </tr>
+        
+        <tr>
+            <td>CrowdStrike Holdings, Inc.</td>
+            <td class="ticker">CRWD</td>
+            <td class="industry">Software - Infrastructure</td>
+            <td class="price">$481.58</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">112.78</td>
+            <td class="peg-ratio peg-high">5.42</td>
+        </tr>
+        
+        <tr>
+            <td>Cisco Systems, Inc.</td>
+            <td class="ticker">CSCO</td>
+            <td class="industry">Communication Equipment</td>
+            <td class="price">$68.34</td>
+            <td class="pe-ratio">27.89</td>
+            <td class="pe-ratio">17.52</td>
+            <td class="peg-ratio peg-high">2.26</td>
+        </tr>
+        
+        <tr>
+            <td>Cintas Corporation</td>
+            <td class="ticker">CTAS</td>
+            <td class="industry">Specialty Business Services</td>
+            <td class="price">$221.32</td>
+            <td class="pe-ratio">50.41</td>
+            <td class="pe-ratio">47.29</td>
+            <td class="peg-ratio peg-high">3.93</td>
+        </tr>
+        
+        <tr>
+            <td>Datadog, Inc.</td>
+            <td class="ticker">DDOG</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$145.27</td>
+            <td class="pe-ratio">315.80</td>
+            <td class="pe-ratio">71.56</td>
+            <td class="peg-ratio peg-high">2.74</td>
+        </tr>
+        
+        <tr>
+            <td>Dollar Tree, Inc.</td>
+            <td class="ticker">DLTR</td>
+            <td class="industry">Discount Stores</td>
+            <td class="price">$112.31</td>
+            <td class="pe-ratio">22.15</td>
+            <td class="pe-ratio">18.53</td>
+            <td class="peg-ratio peg-moderate">1.33</td>
+        </tr>
+        
+        <tr>
+            <td>DocuSign, Inc.</td>
+            <td class="ticker">DOCU</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$79.34</td>
+            <td class="pe-ratio">15.08</td>
+            <td class="pe-ratio">21.50</td>
+            <td class="peg-ratio peg-good">0.134</td>
+        </tr>
+        
+        <tr>
+            <td>Electronic Arts Inc.</td>
+            <td class="ticker">EA</td>
+            <td class="industry">Electronic Gaming & Multimedia</td>
+            <td class="price">$153.39</td>
+            <td class="pe-ratio">36.09</td>
+            <td class="pe-ratio">17.98</td>
+            <td class="peg-ratio peg-moderate">1.39</td>
+        </tr>
+        
+        <tr>
+            <td>eBay Inc.</td>
+            <td class="ticker">EBAY</td>
+            <td class="industry">Internet Retail</td>
+            <td class="price">$79.03</td>
+            <td class="pe-ratio">19.00</td>
+            <td class="pe-ratio">15.14</td>
+            <td class="peg-ratio peg-moderate">1.98</td>
+        </tr>
+        
+        <tr>
+            <td>Exelon Corporation</td>
+            <td class="ticker">EXC</td>
+            <td class="industry">Utilities - Regulated Electric</td>
+            <td class="price">$43.73</td>
+            <td class="pe-ratio">16.26</td>
+            <td class="pe-ratio">16.63</td>
+            <td class="peg-ratio peg-high">2.10</td>
+        </tr>
+        
+        <tr>
+            <td>Expeditors International of Washington, Inc.</td>
+            <td class="ticker">EXPD</td>
+            <td class="industry">Integrated Freight & Logistics</td>
+            <td class="price">$112.54</td>
+            <td class="pe-ratio">18.69</td>
+            <td class="pe-ratio">20.92</td>
+            <td class="peg-ratio peg-high">4.03</td>
+        </tr>
+        
+        <tr>
+            <td>Fastenal Company</td>
+            <td class="ticker">FAST</td>
+            <td class="industry">Industrial Distribution</td>
+            <td class="price">$46.02</td>
+            <td class="pe-ratio">44.25</td>
+            <td class="pe-ratio">21.01</td>
+            <td class="peg-ratio peg-high">4.12</td>
+        </tr>
+        
+        <tr>
+            <td>Fox Corporation</td>
+            <td class="ticker">FOX</td>
+            <td class="industry">Entertainment</td>
+            <td class="price">$51.07</td>
+            <td class="pe-ratio">12.64</td>
+            <td class="pe-ratio">21.73</td>
+            <td class="peg-ratio peg-high">5.66</td>
+        </tr>
+        
+        <tr>
+            <td>Fox Corporation</td>
+            <td class="ticker">FOXA</td>
+            <td class="industry">Entertainment</td>
+            <td class="price">$55.47</td>
+            <td class="pe-ratio">13.73</td>
+            <td class="pe-ratio">14.87</td>
+            <td class="peg-ratio peg-high">6.16</td>
+        </tr>
+        
+        <tr>
+            <td>Fortinet, Inc.</td>
+            <td class="ticker">FTNT</td>
+            <td class="industry">Software - Infrastructure</td>
+            <td class="price">$106.94</td>
+            <td class="pe-ratio">43.83</td>
+            <td class="pe-ratio">44.37</td>
+            <td class="peg-ratio peg-high">2.94</td>
+        </tr>
+        
+        <tr>
+            <td>Gilead Sciences, Inc.</td>
+            <td class="ticker">GILD</td>
+            <td class="industry">Drug Manufacturers - General</td>
+            <td class="price">$108.28</td>
+            <td class="pe-ratio">22.75</td>
+            <td class="pe-ratio">14.57</td>
+            <td class="peg-ratio peg-good">0.225</td>
+        </tr>
+        
+        <tr>
+            <td>Alphabet Inc.</td>
+            <td class="ticker">GOOG</td>
+            <td class="industry">Internet Content & Information</td>
+            <td class="price">$191.15</td>
+            <td class="pe-ratio">21.33</td>
+            <td class="pe-ratio">21.36</td>
+            <td class="peg-ratio peg-moderate">1.39</td>
+        </tr>
+        
+        <tr>
+            <td>Alphabet Inc.</td>
+            <td class="ticker">GOOGL</td>
+            <td class="industry">Internet Content & Information</td>
+            <td class="price">$190.10</td>
+            <td class="pe-ratio">21.22</td>
+            <td class="pe-ratio">21.22</td>
+            <td class="peg-ratio peg-moderate">1.38</td>
+        </tr>
+        
+        <tr>
+            <td>Honeywell International Inc.</td>
+            <td class="ticker">HON</td>
+            <td class="industry">Conglomerates</td>
+            <td class="price">$235.22</td>
+            <td class="pe-ratio">27.04</td>
+            <td class="pe-ratio">21.36</td>
+            <td class="peg-ratio peg-high">2.35</td>
+        </tr>
+        
+        <tr>
+            <td>Robinhood Markets, Inc.</td>
+            <td class="ticker">HOOD</td>
+            <td class="industry">Capital Markets</td>
+            <td class="price">$104.34</td>
+            <td class="pe-ratio">59.97</td>
+            <td class="pe-ratio">142.93</td>
+            <td class="peg-ratio peg-good">0.564</td>
+        </tr>
+        
+        <tr>
+            <td>IDEXX Laboratories, Inc.</td>
+            <td class="ticker">IDXX</td>
+            <td class="industry">Diagnostics & Research</td>
+            <td class="price">$520.87</td>
+            <td class="pe-ratio">48.18</td>
+            <td class="pe-ratio">43.55</td>
+            <td class="peg-ratio peg-high">4.25</td>
+        </tr>
+        
+        <tr>
+            <td>Illumina, Inc.</td>
+            <td class="ticker">ILMN</td>
+            <td class="industry">Diagnostics & Research</td>
+            <td class="price">$94.80</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">21.45</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Intel Corporation</td>
+            <td class="ticker">INTC</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$23.26</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">23.98</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Intuit Inc.</td>
+            <td class="ticker">INTU</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$763.69</td>
+            <td class="pe-ratio">62.24</td>
+            <td class="pe-ratio">34.35</td>
+            <td class="peg-ratio peg-moderate">1.95</td>
+        </tr>
+        
+        <tr>
+            <td>Intuitive Surgical, Inc.</td>
+            <td class="ticker">ISRG</td>
+            <td class="industry">Medical Instruments & Supplies</td>
+            <td class="price">$516.12</td>
+            <td class="pe-ratio">75.35</td>
+            <td class="pe-ratio">65.66</td>
+            <td class="peg-ratio peg-high">3.66</td>
+        </tr>
+        
+        <tr>
+            <td>JD.com, Inc.</td>
+            <td class="ticker">JD</td>
+            <td class="industry">Internet Retail</td>
+            <td class="price">$33.40</td>
+            <td class="pe-ratio">8.13</td>
+            <td class="pe-ratio">8.07</td>
+            <td class="peg-ratio peg-good">0.140</td>
+        </tr>
+        
+        <tr>
+            <td>Keurig Dr Pepper Inc.</td>
+            <td class="ticker">KDP</td>
+            <td class="industry">Beverages - Non-Alcoholic</td>
+            <td class="price">$33.32</td>
+            <td class="pe-ratio">30.29</td>
+            <td class="pe-ratio">16.25</td>
+            <td class="peg-ratio peg-moderate">1.03</td>
+        </tr>
+        
+        <tr>
+            <td>KLA Corporation</td>
+            <td class="ticker">KLAC</td>
+            <td class="industry">Semiconductor Equipment & Materials</td>
+            <td class="price">$937.76</td>
+            <td class="pe-ratio">34.14</td>
+            <td class="pe-ratio">28.57</td>
+            <td class="peg-ratio peg-moderate">1.75</td>
+        </tr>
+        
+        <tr>
+            <td>Lucid Group, Inc.</td>
+            <td class="ticker">LCID</td>
+            <td class="industry">Auto Manufacturers</td>
+            <td class="price">$2.82</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">-3.20</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Logitech International S.A.</td>
+            <td class="ticker">LOGI</td>
+            <td class="industry">Computer Hardware</td>
+            <td class="price">$95.10</td>
+            <td class="pe-ratio">23.03</td>
+            <td class="pe-ratio">20.28</td>
+            <td class="peg-ratio peg-high">2.13</td>
+        </tr>
+        
+        <tr>
+            <td>Lam Research Corporation</td>
+            <td class="ticker">LRCX</td>
+            <td class="industry">Semiconductor Equipment & Materials</td>
+            <td class="price">$101.74</td>
+            <td class="pe-ratio">28.34</td>
+            <td class="pe-ratio">23.83</td>
+            <td class="peg-ratio peg-moderate">1.49</td>
+        </tr>
+        
+        <tr>
+            <td>lululemon athletica inc.</td>
+            <td class="ticker">LULU</td>
+            <td class="industry">Apparel Retail</td>
+            <td class="price">$223.21</td>
+            <td class="pe-ratio">15.17</td>
+            <td class="pe-ratio">14.95</td>
+            <td class="peg-ratio peg-good">0.978</td>
+        </tr>
+        
+        <tr>
+            <td>Microchip Technology Incorporated</td>
+            <td class="ticker">MCHP</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$73.85</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">28.40</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Mondelez International, Inc.</td>
+            <td class="ticker">MDLZ</td>
+            <td class="industry">Confectioners</td>
+            <td class="price">$69.42</td>
+            <td class="pe-ratio">25.81</td>
+            <td class="pe-ratio">20.24</td>
+            <td class="peg-ratio peg-high">5.68</td>
+        </tr>
+        
+        <tr>
+            <td>MercadoLibre, Inc.</td>
+            <td class="ticker">MELI</td>
+            <td class="industry">Internet Retail</td>
+            <td class="price">$2379.06</td>
+            <td class="pe-ratio">58.67</td>
+            <td class="pe-ratio">49.17</td>
+            <td class="peg-ratio peg-moderate">1.56</td>
+        </tr>
+        
+        <tr>
+            <td>Meta Platforms, Inc.</td>
+            <td class="ticker">META</td>
+            <td class="industry">Internet Content & Information</td>
+            <td class="price">$712.97</td>
+            <td class="pe-ratio">27.88</td>
+            <td class="pe-ratio">28.18</td>
+            <td class="peg-ratio peg-high">2.33</td>
+        </tr>
+        
+        <tr>
+            <td>Monster Beverage Corporation</td>
+            <td class="ticker">MNST</td>
+            <td class="industry">Beverages - Non-Alcoholic</td>
+            <td class="price">$59.43</td>
+            <td class="pe-ratio">39.10</td>
+            <td class="pe-ratio">31.78</td>
+            <td class="peg-ratio peg-moderate">1.92</td>
+        </tr>
+        
+        <tr>
+            <td>Monolithic Power Systems, Inc.</td>
+            <td class="ticker">MPWR</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$724.77</td>
+            <td class="pe-ratio">19.33</td>
+            <td class="pe-ratio">42.19</td>
+            <td class="peg-ratio peg-good">0.406</td>
+        </tr>
+        
+        <tr>
+            <td>Moderna, Inc.</td>
+            <td class="ticker">MRNA</td>
+            <td class="industry">Biotechnology</td>
+            <td class="price">$30.97</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">-3.56</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Marvell Technology, Inc.</td>
+            <td class="ticker">MRVL</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$73.06</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">29.22</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Microsoft Corporation</td>
+            <td class="ticker">MSFT</td>
+            <td class="industry">Software - Infrastructure</td>
+            <td class="price">$510.06</td>
+            <td class="pe-ratio">39.36</td>
+            <td class="pe-ratio">34.12</td>
+            <td class="peg-ratio peg-high">2.39</td>
+        </tr>
+        
+        <tr>
+            <td>Netflix, Inc.</td>
+            <td class="ticker">NFLX</td>
+            <td class="industry">Entertainment</td>
+            <td class="price">$1233.27</td>
+            <td class="pe-ratio">52.57</td>
+            <td class="pe-ratio">51.86</td>
+            <td class="peg-ratio peg-high">2.28</td>
+        </tr>
+        
+        <tr>
+            <td>ServiceNow, Inc.</td>
+            <td class="ticker">NOW</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$959.91</td>
+            <td class="pe-ratio">131.14</td>
+            <td class="pe-ratio">57.48</td>
+            <td class="peg-ratio peg-high">2.14</td>
+        </tr>
+        
+        <tr>
+            <td>NetEase, Inc.</td>
+            <td class="ticker">NTES</td>
+            <td class="industry">Electronic Gaming & Multimedia</td>
+            <td class="price">$137.35</td>
+            <td class="pe-ratio">19.62</td>
+            <td class="pe-ratio">18.26</td>
+            <td class="peg-ratio peg-high">2.26</td>
+        </tr>
+        
+        <tr>
+            <td>NVIDIA Corporation</td>
+            <td class="ticker">NVDA</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$171.38</td>
+            <td class="pe-ratio">55.28</td>
+            <td class="pe-ratio">41.60</td>
+            <td class="peg-ratio peg-moderate">1.67</td>
+        </tr>
+        
+        <tr>
+            <td>NXP Semiconductors N.V.</td>
+            <td class="ticker">NXPI</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$228.27</td>
+            <td class="pe-ratio">24.89</td>
+            <td class="pe-ratio">17.47</td>
+            <td class="peg-ratio peg-moderate">1.52</td>
+        </tr>
+        
+        <tr>
+            <td>Old Dominion Freight Line, Inc.</td>
+            <td class="ticker">ODFL</td>
+            <td class="industry">Trucking</td>
+            <td class="price">$163.25</td>
+            <td class="pe-ratio">30.63</td>
+            <td class="pe-ratio">27.67</td>
+            <td class="peg-ratio peg-high">3.06</td>
+        </tr>
+        
+        <tr>
+            <td>Okta, Inc.</td>
+            <td class="ticker">OKTA</td>
+            <td class="industry">Software - Infrastructure</td>
+            <td class="price">$95.86</td>
+            <td class="pe-ratio">147.48</td>
+            <td class="pe-ratio">33.06</td>
+            <td class="peg-ratio peg-good">0.505</td>
+        </tr>
+        
+        <tr>
+            <td>Oracle Corporation</td>
+            <td class="ticker">ORCL</td>
+            <td class="industry">Software - Infrastructure</td>
+            <td class="price">$243.54</td>
+            <td class="pe-ratio">56.12</td>
+            <td class="pe-ratio">34.01</td>
+            <td class="peg-ratio peg-high">2.56</td>
+        </tr>
+        
+        <tr>
+            <td>Palo Alto Networks, Inc.</td>
+            <td class="ticker">PANW</td>
+            <td class="industry">Software - Infrastructure</td>
+            <td class="price">$199.88</td>
+            <td class="pe-ratio">114.87</td>
+            <td class="pe-ratio">27.76</td>
+            <td class="peg-ratio peg-high">2.44</td>
+        </tr>
+        
+        <tr>
+            <td>Paychex, Inc.</td>
+            <td class="ticker">PAYX</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$142.66</td>
+            <td class="pe-ratio">31.15</td>
+            <td class="pe-ratio">26.97</td>
+            <td class="peg-ratio peg-high">2.54</td>
+        </tr>
+        
+        <tr>
+            <td>PDD Holdings Inc.</td>
+            <td class="ticker">PDD</td>
+            <td class="industry">Internet Retail</td>
+            <td class="price">$111.66</td>
+            <td class="pe-ratio">11.97</td>
+            <td class="pe-ratio">7.92</td>
+            <td class="peg-ratio peg-moderate">1.31</td>
+        </tr>
+        
+        <tr>
+            <td>PepsiCo, Inc.</td>
+            <td class="ticker">PEP</td>
+            <td class="industry">Beverages - Non-Alcoholic</td>
+            <td class="price">$141.70</td>
+            <td class="pe-ratio">25.81</td>
+            <td class="pe-ratio">16.42</td>
+            <td class="peg-ratio peg-high">3.23</td>
+        </tr>
+        
+        <tr>
+            <td>PayPal Holdings, Inc.</td>
+            <td class="ticker">PYPL</td>
+            <td class="industry">Credit Services</td>
+            <td class="price">$74.82</td>
+            <td class="pe-ratio">16.81</td>
+            <td class="pe-ratio">15.30</td>
+            <td class="peg-ratio peg-moderate">1.00</td>
+        </tr>
+        
+        <tr>
+            <td>QUALCOMM Incorporated</td>
+            <td class="ticker">QCOM</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$158.97</td>
+            <td class="pe-ratio">16.22</td>
+            <td class="pe-ratio">13.00</td>
+            <td class="peg-ratio peg-high">2.22</td>
+        </tr>
+        
+        <tr>
+            <td>Regeneron Pharmaceuticals, Inc.</td>
+            <td class="ticker">REGN</td>
+            <td class="industry">Biotechnology</td>
+            <td class="price">$545.53</td>
+            <td class="pe-ratio">13.87</td>
+            <td class="pe-ratio">12.04</td>
+            <td class="peg-ratio peg-moderate">1.15</td>
+        </tr>
+        
+        <tr>
+            <td>Rivian Automotive, Inc.</td>
+            <td class="ticker">RIVN</td>
+            <td class="industry">Auto Manufacturers</td>
+            <td class="price">$13.70</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">-5.00</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Roku, Inc.</td>
+            <td class="ticker">ROKU</td>
+            <td class="industry">Entertainment</td>
+            <td class="price">$91.69</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">-145.54</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Starbucks Corporation</td>
+            <td class="ticker">SBUX</td>
+            <td class="industry">Restaurants</td>
+            <td class="price">$92.66</td>
+            <td class="pe-ratio">33.69</td>
+            <td class="pe-ratio">24.91</td>
+            <td class="peg-ratio peg-high">2.48</td>
+        </tr>
+        
+        <tr>
+            <td>Sirius XM Holdings Inc.</td>
+            <td class="ticker">SIRI</td>
+            <td class="industry">Entertainment</td>
+            <td class="price">$23.23</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">7.57</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Synopsys, Inc.</td>
+            <td class="ticker">SNPS</td>
+            <td class="industry">Software - Infrastructure</td>
+            <td class="price">$591.46</td>
+            <td class="pe-ratio">68.38</td>
+            <td class="pe-ratio">39.78</td>
+            <td class="peg-ratio peg-high">12.07</td>
+        </tr>
+        
+        <tr>
+            <td>Atlassian Corporation</td>
+            <td class="ticker">TEAM</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$194.36</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">47.29</td>
+            <td class="peg-ratio peg-high">2.29</td>
+        </tr>
+        
+        <tr>
+            <td>T-Mobile US, Inc.</td>
+            <td class="ticker">TMUS</td>
+            <td class="industry">Telecom Services</td>
+            <td class="price">$232.62</td>
+            <td class="pe-ratio">22.69</td>
+            <td class="pe-ratio">21.80</td>
+            <td class="peg-ratio peg-moderate">1.06</td>
+        </tr>
+        
+        <tr>
+            <td>Tesla, Inc.</td>
+            <td class="ticker">TSLA</td>
+            <td class="industry">Auto Manufacturers</td>
+            <td class="price">$328.49</td>
+            <td class="pe-ratio">187.71</td>
+            <td class="pe-ratio">101.39</td>
+            <td class="peg-ratio peg-high">5.77</td>
+        </tr>
+        
+        <tr>
+            <td>Texas Instruments Incorporated</td>
+            <td class="ticker">TXN</td>
+            <td class="industry">Semiconductors</td>
+            <td class="price">$214.57</td>
+            <td class="pe-ratio">40.56</td>
+            <td class="pe-ratio">36.49</td>
+            <td class="peg-ratio peg-high">2.30</td>
+        </tr>
+        
+        <tr>
+            <td>Verisk Analytics, Inc.</td>
+            <td class="ticker">VRSK</td>
+            <td class="industry">Consulting Services</td>
+            <td class="price">$299.56</td>
+            <td class="pe-ratio">44.12</td>
+            <td class="pe-ratio">41.09</td>
+            <td class="peg-ratio peg-high">4.06</td>
+        </tr>
+        
+        <tr>
+            <td>Vertex Pharmaceuticals Incorporated</td>
+            <td class="ticker">VRTX</td>
+            <td class="industry">Biotechnology</td>
+            <td class="price">$458.49</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">24.43</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Walgreens Boots Alliance, Inc.</td>
+            <td class="ticker">WBA</td>
+            <td class="industry">Pharmaceutical Retailers</td>
+            <td class="price">$11.52</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">7.84</td>
+            <td class="peg-ratio peg-high">N/A</td>
+        </tr>
+        
+        <tr>
+            <td>Workday, Inc.</td>
+            <td class="ticker">WDAY</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$233.71</td>
+            <td class="pe-ratio">130.56</td>
+            <td class="pe-ratio">28.16</td>
+            <td class="peg-ratio peg-moderate">1.02</td>
+        </tr>
+        
+        <tr>
+            <td>Xcel Energy Inc.</td>
+            <td class="ticker">XEL</td>
+            <td class="industry">Utilities - Regulated Electric</td>
+            <td class="price">$71.57</td>
+            <td class="pe-ratio">21.05</td>
+            <td class="pe-ratio">18.69</td>
+            <td class="peg-ratio peg-high">2.81</td>
+        </tr>
+        
+        <tr>
+            <td>Zoom Communications Inc.</td>
+            <td class="ticker">ZM</td>
+            <td class="industry">Software - Application</td>
+            <td class="price">$74.48</td>
+            <td class="pe-ratio">22.37</td>
+            <td class="pe-ratio">14.08</td>
+            <td class="peg-ratio peg-moderate">1.20</td>
+        </tr>
+        
+        <tr>
+            <td>Zscaler, Inc.</td>
+            <td class="ticker">ZS</td>
+            <td class="industry">Software - Infrastructure</td>
+            <td class="price">$288.43</td>
+            <td class="pe-ratio">N/A</td>
+            <td class="pe-ratio">81.02</td>
+            <td class="peg-ratio peg-high">3.90</td>
+        </tr>
+        
+                         </tbody>
+                     </table>
+                 </div>
+             </div>
+             <div class="scroll-hint">
+                 👈👉 테이블을 좌우로 스크롤하여 모든 데이터를 확인하세요
+             </div>
+         </div>
+        
+        <div class="update-time">
+            <p>📅 업데이트: 2025-07-22 | 📊 데이터 출처: Yahoo Finance</p>
+        </div>
+    </div>
+
+         <script>
+         let sortDirection = {};
+         
+         function sortTable(columnIndex) {
+             const bodyTable = document.getElementById('stockTable');
+             const tbody = bodyTable.getElementsByTagName('tbody')[0];
+             const rows = Array.from(tbody.getElementsByTagName('tr'));
+             const headerTable = document.querySelector('.table-header table');
+             const headers = headerTable.getElementsByTagName('th');
+             
+             // 정렬 방향 토글
+             const currentDirection = sortDirection[columnIndex] || 'asc';
+             const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+             sortDirection[columnIndex] = newDirection;
+             
+             // 모든 헤더에서 정렬 클래스 제거
+             for (let header of headers) {
+                 header.classList.remove('sort-asc', 'sort-desc');
+             }
+             
+             // 현재 헤더에 정렬 클래스 추가
+             headers[columnIndex].classList.add(`sort-${newDirection}`);
+             
+             // 행 정렬
+             rows.sort((a, b) => {
+                 const aValue = a.getElementsByTagName('td')[columnIndex].textContent.trim();
+                 const bValue = b.getElementsByTagName('td')[columnIndex].textContent.trim();
+                 
+                 // 숫자 컬럼 처리 (가격, P/E, PEG)
+                 if (columnIndex >= 3) {
+                     const aNum = parseFloat(aValue.replace(/[$,]/g, '')) || 0;
+                     const bNum = parseFloat(bValue.replace(/[$,]/g, '')) || 0;
+                     
+                     if (newDirection === 'asc') {
+                         return aNum - bNum;
+                     } else {
+                         return bNum - aNum;
+                     }
+                 }
+                 
+                 // 텍스트 컬럼 처리
+                 if (newDirection === 'asc') {
+                     return aValue.localeCompare(bValue, 'ko');
+                 } else {
+                     return bValue.localeCompare(aValue, 'ko');
+                 }
+             });
+             
+             // 정렬된 행들을 테이블에 다시 추가
+             rows.forEach(row => tbody.appendChild(row));
+         }
+         
+         // 페이지 로드 시 PEG 기준으로 기본 정렬
+         document.addEventListener('DOMContentLoaded', function() {
+             sortTable(6); // PEG 컬럼 기준 정렬
+         });
+     </script>
+</body>
+</html>
+    
