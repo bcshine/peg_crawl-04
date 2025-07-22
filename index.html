@@ -18,11 +18,11 @@
     <meta name="msapplication-tap-highlight" content="no">
     
     <!-- PWA 매니페스트 및 아이콘 -->
-    <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="./bull_logo.png">
-    <link rel="apple-touch-icon" href="./bull_logo.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="./bull_logo.png">
-    <link rel="apple-touch-startup-image" href="./bull_logo.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="bull_logo.png">
+    <link rel="apple-touch-icon" href="bull_logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="bull_logo.png">
+    <link rel="apple-touch-startup-image" href="bull_logo.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
@@ -1101,35 +1101,26 @@
             init() {
                 this.registerServiceWorker();
                 this.setupInstallPrompt();
-                this.setupUpdateNotification();
-                this.setupInstallBanner();
+                this.checkUsageTime();
             }
 
             // Service Worker 등록
             async registerServiceWorker() {
                 if ('serviceWorker' in navigator) {
                     try {
-                        // 알림 권한 요청
-                        if ('Notification' in window) {
-                            if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-                                console.log('🔔 알림 권한 요청 중...');
-                                await Notification.requestPermission();
-                            }
-                        }
-                        
-                        const registration = await navigator.serviceWorker.register('./sw.js');
+                        const registration = await navigator.serviceWorker.register('sw.js');
                         console.log('✅ Service Worker 등록 성공:', registration.scope);
                         
-                        // 업데이트 확인
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker?.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    this.showUpdateNotification();
-                                }
-                            });
+                        // 설치 시간 기록 및 만료 체크 요청
+                        let installTime = localStorage.getItem('pwa-install-time');
+                        if (!installTime) {
+                            installTime = Date.now().toString();
+                            localStorage.setItem('pwa-install-time', installTime);
+                        }
+                        navigator.serviceWorker.controller?.postMessage({
+                            type: 'CHECK_EXPIRATION',
+                            installTime: parseInt(installTime)
                         });
-
 
                     } catch (error) {
                         console.error('❌ Service Worker 등록 실패:', error);
