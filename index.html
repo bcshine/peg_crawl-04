@@ -498,9 +498,9 @@
         @media (max-width: 768px) {
             :root {
                 /* 모바일용 컬럼 너비 재정의 */
-                --col-company: 140px;
+                --col-company: 120px; /* 회사 이름 너비 조정 */
                 --col-ticker: 60px;
-                --col-industry: 100px;
+                --col-industry: 120px; /* 산업군 너비 확보 */
                 --col-peg: 70px;
                 --col-pe: 70px;
                 --col-price: 80px;
@@ -911,16 +911,17 @@
                     const row = document.createElement('tr');
                     row.setAttribute('role', 'row');
                     
+                    // 각 셀에 너비 클래스(col-*)와 스타일 클래스(cell-*)를 모두 적용
                     row.innerHTML = `
-                        <td class="cell-company" role="gridcell">${stock.company}</td>
-                        <td class="cell-ticker" role="gridcell">${stock.ticker}</td>
-                        <td class="cell-industry" role="gridcell">${stock.industry}</td>
-                        <td class="cell-peg ${Utils.getPegClass(stock.peg)}" role="gridcell">
+                        <td class="col-company cell-company" role="gridcell">${stock.company}</td>
+                        <td class="col-ticker cell-ticker" role="gridcell">${stock.ticker}</td>
+                        <td class="col-industry cell-industry" role="gridcell">${stock.industry}</td>
+                        <td class="col-peg cell-peg ${Utils.getPegClass(stock.peg)}" role="gridcell">
                             ${Utils.formatNumber(stock.peg)}
                         </td>
-                        <td class="cell-pe" role="gridcell">${Utils.formatNumber(stock.trailPE)}</td>
-                        <td class="cell-pe" role="gridcell">${Utils.formatNumber(stock.fwdPE)}</td>
-                        <td class="cell-price" role="gridcell">${Utils.formatPrice(stock.price)}</td>
+                        <td class="col-pe cell-pe" role="gridcell">${Utils.formatNumber(stock.trailPE)}</td>
+                        <td class="col-pe cell-pe" role="gridcell">${Utils.formatNumber(stock.fwdPE)}</td>
+                        <td class="col-price cell-price" role="gridcell">${Utils.formatPrice(stock.price)}</td>
                     `;
                     
                     tbody.appendChild(row);
