@@ -21,9 +21,18 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="/bull_logo.png">
     <link rel="apple-touch-icon" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/bull_logo.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/bull_logo.png">
     <link rel="apple-touch-icon" sizes="152x152" href="/bull_logo.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/bull_logo.png">
     <link rel="apple-touch-startup-image" href="/bull_logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
 
     <style>
@@ -1172,6 +1181,11 @@
 
             // 설치 배너 생성 및 표시
             setupInstallBanner() {
+                // 브라우저와 OS 감지
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                const isAndroid = /android/i.test(navigator.userAgent);
+                
                 const banner = document.createElement('div');
                 banner.id = 'pwa-install-banner';
                 banner.style.cssText = `
@@ -1189,11 +1203,22 @@
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                 `;
                 
+                let installButtonText = '설치하기';
+                let installMessage = `<strong>📱 나스닥 100 PEG 분석</strong>을 홈 화면에 추가하세요!<br><small>${this.usageDays}일간 사용 가능한 네이티브 앱</small>`;
+                
+                // OS별 맞춤 메시지
+                if (isIOS) {
+                    installButtonText = 'iOS 설치 방법';
+                    installMessage = `<strong>📱 iOS에서 네이티브 앱으로 설치하기</strong><br><small>Safari에서 "홈 화면에 추가" 기능으로 ${this.usageDays}일간 사용 가능</small>`;
+                } else if (isAndroid) {
+                    installButtonText = '앱 설치';
+                    installMessage = `<strong>📱 Android에서 네이티브 앱으로 설치하기</strong><br><small>Chrome에서 "앱 설치" 기능으로 ${this.usageDays}일간 사용 가능</small>`;
+                }
+                
                 banner.innerHTML = `
                     <div style="max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
                         <div style="flex: 1;">
-                            <strong>📱 나스닥 100 PEG 분석</strong>을 홈 화면에 추가하세요!
-                            <br><small>${this.usageDays}일간 사용 가능한 PWA 앱</small>
+                            ${installMessage}
                         </div>
                         <div style="display: flex; gap: 10px; margin-left: 20px;">
                             <button onclick="PWAManagerInstance.install()" style="
@@ -1204,7 +1229,12 @@
                                 border-radius: 6px;
                                 font-weight: bold;
                                 cursor: pointer;
-                            ">설치</button>
+                                display: flex;
+                                align-items: center;
+                                gap: 5px;
+                            ">
+                                <span style="font-size: 1.2em;">📲</span> ${installButtonText}
+                            </button>
                             <button onclick="PWAManagerInstance.hideInstallBanner()" style="
                                 background: rgba(255,255,255,0.2);
                                 color: white;
@@ -1248,7 +1278,31 @@
             // PWA 설치 실행
             async install() {
                 if (!this.installPrompt) {
-                    alert('이 브라우저에서는 자동 설치가 지원되지 않습니다.\\n\\n수동 설치 방법:\\n• Chrome: 주소창 우측 설치 아이콘 클릭\\n• Safari: 공유 버튼 → "홈 화면에 추가"');
+                    // 브라우저와 OS 감지
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                    const isAndroid = /android/i.test(navigator.userAgent);
+                    
+                    let installMessage = '이 브라우저에서는 자동 설치가 지원되지 않습니다.\\n\\n';
+                    
+                    if (isIOS) {
+                        installMessage += '📱 iOS 설치 방법:\\n' +
+                            '1. Safari 브라우저에서 이 페이지를 열어주세요\\n' +
+                            '2. 하단 공유 버튼(↑) 탭\\n' +
+                            '3. "홈 화면에 추가" 선택\\n' +
+                            '4. "추가" 버튼 탭';
+                    } else if (isAndroid) {
+                        installMessage += '📱 Android 설치 방법:\\n' +
+                            '1. Chrome 브라우저에서 이 페이지를 열어주세요\\n' +
+                            '2. 메뉴(⋮) 버튼 탭\\n' +
+                            '3. "앱 설치" 또는 "홈 화면에 추가" 선택';
+                    } else {
+                        installMessage += '수동 설치 방법:\\n' +
+                            '• Chrome/Edge: 주소창 우측 설치 아이콘 클릭\\n' +
+                            '• Safari: 공유 버튼 → "홈 화면에 추가"';
+                    }
+                    
+                    alert(installMessage);
                     return;
                 }
 
