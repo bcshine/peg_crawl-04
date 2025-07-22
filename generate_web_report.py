@@ -55,12 +55,53 @@ def convert_to_js_data(df, current_date):
         company = str(row.get('종목명', '')).replace('"', '\\"')
         ticker = str(row.get('티커', ''))
         
-        # 산업군 정보 간소화
+        # 산업군 정보를 아주 짧게 축약
         industry_full = str(row.get('산업군', ''))
-        if ' - ' in industry_full:
-            industry_short = industry_full.split(' - ', 1)[1]
+        
+        # 산업군 텍스트를 매우 짧게 축약하는 로직
+        if 'Technology' in industry_full:
+            if 'Software' in industry_full:
+                if 'Application' in industry_full:
+                    industry_short = 'Tech-App'
+                elif 'Infrastructure' in industry_full:
+                    industry_short = 'Tech-Infra'
+                else:
+                    industry_short = 'Tech-SW'
+            elif 'Semiconductor' in industry_full:
+                industry_short = 'Tech-Semi'
+            elif 'Computer' in industry_full:
+                industry_short = 'Tech-HW'
+            else:
+                industry_short = 'Tech'
+        elif 'Communication' in industry_full:
+            industry_short = 'Telecom'
+        elif 'Healthcare' in industry_full or 'Drug' in industry_full or 'Biotechnology' in industry_full:
+            industry_short = 'Health'
+        elif 'Financial' in industry_full or 'Capital' in industry_full:
+            industry_short = 'Finance'
+        elif 'Consumer' in industry_full:
+            if 'Cyclical' in industry_full:
+                industry_short = 'Consumer'
+            else:
+                industry_short = 'Consumer'
+        elif 'Entertainment' in industry_full:
+            industry_short = 'Media'
+        elif 'Retail' in industry_full or 'Stores' in industry_full:
+            industry_short = 'Retail'
+        elif 'Auto' in industry_full:
+            industry_short = 'Auto'
+        elif 'Utilities' in industry_full:
+            industry_short = 'Utility'
+        elif 'Travel' in industry_full:
+            industry_short = 'Travel'
+        elif 'Restaurant' in industry_full:
+            industry_short = 'Food'
+        elif 'Beverage' in industry_full:
+            industry_short = 'Drink'
         else:
-            industry_short = industry_full
+            # 기본적으로 첫 번째 단어만 사용
+            industry_short = industry_full.split(' ')[0][:8] if industry_full else 'Other'
+        
         industry = industry_short.replace('"', '\\"')
         
         # 숫자 값들 처리 (null 또는 빈 값을 null로 변환)
