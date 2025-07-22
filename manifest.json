@@ -2,55 +2,15 @@
   "name": "나스닥 100 PEG 분석",
   "short_name": "NASDAQ PEG",
   "description": "나스닥 100 종목 PEG 비율 분석 대시보드",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f5f5f7",
   "theme_color": "#007aff",
-  "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "ko",
-  "dir": "ltr",
-  "categories": ["finance", "productivity", "business"],
   "icons": [
     {
       "src": "/bull_logo.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/bull_logo.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/bull_logo.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/bull_logo.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/bull_logo.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/bull_logo.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/bull_logo.png",
-      "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
@@ -58,30 +18,19 @@
       "src": "/bull_logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "PEG 분석 보기",
-      "short_name": "PEG 분석",
-      "description": "나스닥 100 종목 PEG 분석 결과 보기",
-      "url": "/",
-      "icons": [
-        {
-          "src": "/bull_logo.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ],
-  "screenshots": [
+      "purpose": "any"
+    },
     {
       "src": "/bull_logo.png",
-      "sizes": "1280x720",
-      "type": "image/png"
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/bull_logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ],
-  "prefer_related_applications": false,
-  "related_applications": []
+  ]
 } 

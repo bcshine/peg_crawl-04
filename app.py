@@ -86,5 +86,21 @@ def update_data():
 
 if __name__ == '__main__':
     print("🚀 나스닥 PEG 분석 서버 시작...")
-    print("📱 브라우저에서 http://localhost:5000 접속하세요")
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    
+    # HTTPS를 위한 SSL 컨텍스트 생성 (개발용 self-signed certificate)
+    import ssl
+    
+    try:
+        # 자체 서명 인증서로 HTTPS 서버 실행
+        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        context.load_cert_chain('cert.pem', 'key.pem')
+        print("🔒 HTTPS 서버로 실행 중...")
+        print("📱 브라우저에서 https://localhost:5000 접속하세요")
+        print("📱 모바일에서는 https://14.33.80.107:5000 접속하세요")
+        app.run(debug=True, host='0.0.0.0', port=5000, ssl_context=context)
+    except FileNotFoundError:
+        print("⚠️ SSL 인증서가 없어서 HTTP로 실행합니다.")
+        print("📱 PWA 설치를 위해서는 HTTPS가 필요합니다.")
+        print("📱 브라우저에서 http://localhost:5000 접속하세요 (PWA 설치 불가)")
+        print("📱 모바일에서는 http://14.33.80.107:5000 접속하세요 (PWA 설치 불가)")
+        app.run(debug=True, host='0.0.0.0', port=5000) 
