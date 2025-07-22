@@ -9,8 +9,6 @@ const WARNING_DAYS = 7; // 7일 전 경고
 // 캐시할 리소스 목록
 const CACHE_URLS = [
   '/',
-  '/index.html',
-  '/app.py',
   '/bull_logo.png',
   '/logo2.png',
   '/bnb.jpg',
@@ -36,14 +34,21 @@ self.addEventListener('install', (event) => {
         return caches.open('pwa-install-info')
           .then(cache => cache.put('install-time', installTimeResponse))
           .then(() => {
-            return self.registration.showNotification('나스닥 100 PEG 분석', {
-              body: `PWA 설치 완료! ${USAGE_DAYS}일간 사용 가능합니다.`,
-              icon: '/bull_logo.png',
-              badge: '/bull_logo.png',
-              tag: 'install-success',
-              requireInteraction: false,
-              data: { installTime }
-            });
+            // 알림 권한 확인 후 알림 표시
+            if (self.Notification && self.Notification.permission === 'granted') {
+              return self.registration.showNotification('나스닥 100 PEG 분석', {
+                body: `PWA 설치 완료! ${USAGE_DAYS}일간 사용 가능합니다.`,
+                icon: '/bull_logo.png',
+                badge: '/bull_logo.png',
+                tag: 'install-success',
+                requireInteraction: false,
+                data: { installTime }
+              }).catch(err => {
+                console.log('알림 표시 실패:', err);
+                return Promise.resolve(); // 오류가 발생해도 설치 진행
+              });
+            }
+            return Promise.resolve(); // 권한이 없으면 알림 없이 진행
           });
       })
       .then(() => {
@@ -122,7 +127,7 @@ self.addEventListener('fetch', (event) => {
               .catch(() => {
                 // 네트워크 실패 시 오프라인 페이지 제공
                 if (event.request.destination === 'document') {
-                  return caches.match('/index.html');
+                  return caches.match('/');
                 }
               });
           });
@@ -257,16 +262,21 @@ function checkExpirationWarning() {
           if (remainingTime <= warningTime && remainingTime > 0) {
             const remainingDays = Math.ceil(remainingTime / (24 * 60 * 60 * 1000));
             
-            self.registration.showNotification('나스닥 100 PEG 분석', {
-              body: `앱이 ${remainingDays}일 후 만료됩니다. 새 버전 준비를 해주세요.`,
-              icon: '/bull_logo.png',
-              badge: '/bull_logo.png',
-              tag: 'expiration-warning',
-              requireInteraction: true,
-              actions: [
-                { action: 'dismiss', title: '확인' }
-              ]
-            });
+            // 알림 권한 확인 후 알림 표시
+            if (self.Notification && self.Notification.permission === 'granted') {
+              self.registration.showNotification('나스닥 100 PEG 분석', {
+                body: `앱이 ${remainingDays}일 후 만료됩니다. 새 버전 준비를 해주세요.`,
+                icon: '/bull_logo.png',
+                badge: '/bull_logo.png',
+                tag: 'expiration-warning',
+                requireInteraction: true,
+                actions: [
+                  { action: 'dismiss', title: '확인' }
+                ]
+              }).catch(err => {
+                console.log('만료 경고 알림 표시 실패:', err);
+              });
+            }
           }
         });
     })
@@ -304,7 +314,16 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('나스닥 100 PEG 분석', options)
+    // 알림 권한 확인 후 알림 표시
+    (async () => {
+      try {
+        if (self.Notification && self.Notification.permission === 'granted') {
+          await self.registration.showNotification('나스닥 100 PEG 분석', options);
+        }
+      } catch (err) {
+        console.log('푸시 알림 표시 실패:', err);
+      }
+    })()
   );
 });
 

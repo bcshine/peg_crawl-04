@@ -1106,6 +1106,14 @@
             async registerServiceWorker() {
                 if ('serviceWorker' in navigator) {
                     try {
+                        // 알림 권한 요청
+                        if ('Notification' in window) {
+                            if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                                console.log('🔔 알림 권한 요청 중...');
+                                await Notification.requestPermission();
+                            }
+                        }
+                        
                         const registration = await navigator.serviceWorker.register('/sw.js');
                         console.log('✅ Service Worker 등록 성공:', registration.scope);
                         
