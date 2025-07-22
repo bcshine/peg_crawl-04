@@ -1119,10 +1119,25 @@
                             });
                         });
 
-                        // 설치 시간 기록
-                        if (!localStorage.getItem('pwa-install-time')) {
-                            localStorage.setItem('pwa-install-time', Date.now().toString());
-                        }
+                        // 설치 시간 기록 (localStorage와 Cache Storage 모두 사용)
+                        const checkAndSetInstallTime = async () => {
+                            // localStorage 확인 및 설정 (기존 사용자 호환성)
+                            if (!localStorage.getItem('pwa-install-time')) {
+                                const now = Date.now().toString();
+                                localStorage.setItem('pwa-install-time', now);
+                                
+                                // Cache Storage에도 저장
+                                try {
+                                    const cache = await caches.open('pwa-install-info');
+                                    const installTimeResponse = new Response(now);
+                                    await cache.put('install-time', installTimeResponse);
+                                } catch (err) {
+                                    console.error('Cache Storage 저장 실패:', err);
+                                }
+                            }
+                        };
+                        
+                        await checkAndSetInstallTime();
 
                     } catch (error) {
                         console.error('❌ Service Worker 등록 실패:', error);
@@ -1298,24 +1313,39 @@
             }
 
             // 사용 시간 체크 (67일 제한)
-            checkUsageTime() {
-                const installTime = localStorage.getItem('pwa-install-time');
-                if (!installTime) return;
+            async checkUsageTime() {
+                try {
+                    // 먼저 localStorage에서 확인 (기존 사용자 호환성)
+                    let installTime = localStorage.getItem('pwa-install-time');
+                    
+                    // localStorage에 없으면 Cache Storage에서 확인
+                    if (!installTime) {
+                        const cache = await caches.open('pwa-install-info');
+                        const response = await cache.match('install-time');
+                        if (response) {
+                            installTime = await response.text();
+                        }
+                    }
+                    
+                    if (!installTime) return;
 
-                const usageMs = this.usageDays * 24 * 60 * 60 * 1000;
-                const elapsedTime = Date.now() - parseInt(installTime);
-                const remainingTime = usageMs - elapsedTime;
+                    const usageMs = this.usageDays * 24 * 60 * 60 * 1000;
+                    const elapsedTime = Date.now() - parseInt(installTime);
+                    const remainingTime = usageMs - elapsedTime;
 
-                // 7일 전부터 경고
-                const warningTime = 7 * 24 * 60 * 60 * 1000;
-                if (remainingTime <= warningTime && remainingTime > 0) {
-                    const remainingDays = Math.ceil(remainingTime / (24 * 60 * 60 * 1000));
-                    this.showExpirationWarning(remainingDays);
-                }
+                    // 7일 전부터 경고
+                    const warningTime = 7 * 24 * 60 * 60 * 1000;
+                    if (remainingTime <= warningTime && remainingTime > 0) {
+                        const remainingDays = Math.ceil(remainingTime / (24 * 60 * 60 * 1000));
+                        this.showExpirationWarning(remainingDays);
+                    }
 
-                // 만료된 경우
-                if (remainingTime <= 0) {
-                    this.showExpiredMessage();
+                    // 만료된 경우
+                    if (remainingTime <= 0) {
+                        this.showExpiredMessage();
+                    }
+                } catch (error) {
+                    console.error('사용 시간 체크 오류:', error);
                 }
             }
 

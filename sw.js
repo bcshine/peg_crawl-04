@@ -31,15 +31,20 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         // 설치 시간 저장 (67일 만료 체크용)
-        const installTime = Date.now();
-        return self.registration.showNotification('나스닥 100 PEG 분석', {
-          body: `PWA 설치 완료! ${USAGE_DAYS}일간 사용 가능합니다.`,
-          icon: '/bull_logo.png',
-          badge: '/bull_logo.png',
-          tag: 'install-success',
-          requireInteraction: false,
-          data: { installTime }
-        });
+        const installTime = Date.now().toString();
+        const installTimeResponse = new Response(installTime);
+        return caches.open('pwa-install-info')
+          .then(cache => cache.put('install-time', installTimeResponse))
+          .then(() => {
+            return self.registration.showNotification('나스닥 100 PEG 분석', {
+              body: `PWA 설치 완료! ${USAGE_DAYS}일간 사용 가능합니다.`,
+              icon: '/bull_logo.png',
+              badge: '/bull_logo.png',
+              tag: 'install-success',
+              requireInteraction: false,
+              data: { installTime }
+            });
+          });
       })
       .then(() => {
         console.log('✅ Service Worker 설치 완료');
@@ -82,42 +87,44 @@ self.addEventListener('activate', (event) => {
 // ==========================================
 self.addEventListener('fetch', (event) => {
   // 67일 만료 체크
-  if (isExpired()) {
-    event.respondWith(createExpiredResponse());
-    return;
-  }
-
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // 캐시에서 찾으면 반환
-        if (response) {
-          console.log('💾 캐시에서 제공:', event.request.url);
-          return response;
+    isExpired()
+      .then(expired => {
+        if (expired) {
+          return createExpiredResponse();
         }
-
-        // 네트워크에서 가져오기
-        return fetch(event.request)
+        
+        return caches.match(event.request)
           .then((response) => {
-            // 유효한 응답인지 확인
-            if (!response || response.status !== 200 || response.type !== 'basic') {
+            // 캐시에서 찾으면 반환
+            if (response) {
+              console.log('💾 캐시에서 제공:', event.request.url);
               return response;
             }
 
-            // 응답을 캐시에 저장
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
+            // 네트워크에서 가져오기
+            return fetch(event.request)
+              .then((response) => {
+                // 유효한 응답인지 확인
+                if (!response || response.status !== 200 || response.type !== 'basic') {
+                  return response;
+                }
 
-            return response;
-          })
-          .catch(() => {
-            // 네트워크 실패 시 오프라인 페이지 제공
-            if (event.request.destination === 'document') {
-              return caches.match('/index.html');
-            }
+                // 응답을 캐시에 저장
+                const responseToCache = response.clone();
+                caches.open(CACHE_NAME)
+                  .then((cache) => {
+                    cache.put(event.request, responseToCache);
+                  });
+
+                return response;
+              })
+              .catch(() => {
+                // 네트워크 실패 시 오프라인 페이지 제공
+                if (event.request.destination === 'document') {
+                  return caches.match('/index.html');
+                }
+              });
           });
       })
   );
@@ -127,15 +134,25 @@ self.addEventListener('fetch', (event) => {
 // 67일 만료 체크 시스템
 // ==========================================
 function isExpired() {
-  const installTime = localStorage.getItem('pwa-install-time');
-  if (!installTime) {
-    // 설치 시간이 없으면 지금 시간으로 설정
-    localStorage.setItem('pwa-install-time', Date.now().toString());
-    return false;
-  }
-
-  const elapsedTime = Date.now() - parseInt(installTime);
-  return elapsedTime > USAGE_MS;
+  return caches.open('pwa-install-info')
+    .then(cache => cache.match('install-time'))
+    .then(response => {
+      if (!response) {
+        // 설치 시간이 없으면 지금 시간으로 설정
+        const now = Date.now().toString();
+        const installTimeResponse = new Response(now);
+        caches.open('pwa-install-info')
+          .then(cache => cache.put('install-time', installTimeResponse));
+        return false;
+      }
+      
+      return response.text()
+        .then(installTime => {
+          const elapsedTime = Date.now() - parseInt(installTime);
+          return elapsedTime > USAGE_MS;
+        });
+    })
+    .catch(() => false); // 오류 발생 시 만료되지 않은 것으로 처리
 }
 
 function createExpiredResponse() {
@@ -193,9 +210,18 @@ function createExpiredResponse() {
         </div>
         
         <script>
-            function clearExpiredData() {
+            async function clearExpiredData() {
                 // 만료된 데이터 정리
                 localStorage.removeItem('pwa-install-time');
+                
+                // Cache Storage에서도 제거
+                try {
+                    const cache = await caches.open('pwa-install-info');
+                    await cache.delete('install-time');
+                } catch (err) {
+                    console.error('Cache Storage 삭제 실패:', err);
+                }
+                
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistrations().then(registrations => {
                         registrations.forEach(registration => registration.unregister());
@@ -217,27 +243,34 @@ function createExpiredResponse() {
 // 만료 경고 시스템 (7일 전)
 // ==========================================
 function checkExpirationWarning() {
-  const installTime = localStorage.getItem('pwa-install-time');
-  if (!installTime) return;
+  caches.open('pwa-install-info')
+    .then(cache => cache.match('install-time'))
+    .then(response => {
+      if (!response) return;
+      
+      return response.text()
+        .then(installTime => {
+          const elapsedTime = Date.now() - parseInt(installTime);
+          const remainingTime = USAGE_MS - elapsedTime;
+          const warningTime = WARNING_DAYS * 24 * 60 * 60 * 1000;
 
-  const elapsedTime = Date.now() - parseInt(installTime);
-  const remainingTime = USAGE_MS - elapsedTime;
-  const warningTime = WARNING_DAYS * 24 * 60 * 60 * 1000;
-
-  if (remainingTime <= warningTime && remainingTime > 0) {
-    const remainingDays = Math.ceil(remainingTime / (24 * 60 * 60 * 1000));
-    
-    self.registration.showNotification('나스닥 100 PEG 분석', {
-      body: `앱이 ${remainingDays}일 후 만료됩니다. 새 버전 준비를 해주세요.`,
-      icon: '/bull_logo.png',
-      badge: '/bull_logo.png',
-      tag: 'expiration-warning',
-      requireInteraction: true,
-      actions: [
-        { action: 'dismiss', title: '확인' }
-      ]
-    });
-  }
+          if (remainingTime <= warningTime && remainingTime > 0) {
+            const remainingDays = Math.ceil(remainingTime / (24 * 60 * 60 * 1000));
+            
+            self.registration.showNotification('나스닥 100 PEG 분석', {
+              body: `앱이 ${remainingDays}일 후 만료됩니다. 새 버전 준비를 해주세요.`,
+              icon: '/bull_logo.png',
+              badge: '/bull_logo.png',
+              tag: 'expiration-warning',
+              requireInteraction: true,
+              actions: [
+                { action: 'dismiss', title: '확인' }
+              ]
+            });
+          }
+        });
+    })
+    .catch(error => console.error('만료 경고 체크 오류:', error));
 }
 
 // 주기적으로 만료 경고 체크 (하루에 한 번)
@@ -275,4 +308,4 @@ self.addEventListener('push', (event) => {
   );
 });
 
-console.log('🚀 Service Worker 로드 완료 - 67일 사용 기간 시스템 활성화'); 
+console.log('🚀 Service Worker 로드 완료 - 67일 사용 기간 시스템 활성화');
