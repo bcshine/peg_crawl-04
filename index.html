@@ -367,6 +367,10 @@
             font-size: var(--font-sm);
             color: var(--text-secondary);
             font-weight: 400;
+            /* 긴 텍스트 줄임 처리 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .cell-price {
