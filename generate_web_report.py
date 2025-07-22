@@ -54,7 +54,14 @@ def convert_to_js_data(df, current_date):
         # 값들을 안전하게 변환
         company = str(row.get('종목명', '')).replace('"', '\\"')
         ticker = str(row.get('티커', ''))
-        industry = str(row.get('산업군', '')).replace('"', '\\"')
+        
+        # 산업군 정보 간소화
+        industry_full = str(row.get('산업군', ''))
+        if ' - ' in industry_full:
+            industry_short = industry_full.split(' - ', 1)[1]
+        else:
+            industry_short = industry_full
+        industry = industry_short.replace('"', '\\"')
         
         # 숫자 값들 처리 (null 또는 빈 값을 null로 변환)
         def safe_float(value):
