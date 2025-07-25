@@ -451,37 +451,74 @@
         }
 
         /* =============================================
-           플로팅 버튼
+           플로팅 버튼 (입체감 강화)
         ============================================= */
         .floating-btn {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-purple) 100%);
+            background: linear-gradient(145deg, #007aff 0%, #5856d6 60%, #4c44b8 100%);
             color: var(--text-white);
             padding: var(--spacing-md) var(--spacing-xl);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-md);
             text-decoration: none;
             font-weight: 600;
             font-size: var(--font-sm);
-            box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3);
-            transition: var(--transition);
+            
+            /* 강화된 입체감 */
+            box-shadow: 
+                0 8px 25px rgba(0, 122, 255, 0.35),
+                0 3px 8px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+            
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
             border: none;
             cursor: pointer;
             letter-spacing: 0.5px;
+            
+            /* 텍스트 입체감 */
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
         
         .floating-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(0, 122, 255, 0.4);
-            background: linear-gradient(135deg, #0051d5 0%, #4c44b8 100%);
+            transform: translateY(-4px) scale(1.03);
+            background: linear-gradient(145deg, #0051d5 0%, #4c44b8 60%, #3b3699 100%);
+            
+            /* 호버시 더 강한 입체감 */
+            box-shadow: 
+                0 12px 35px rgba(0, 122, 255, 0.45),
+                0 6px 15px rgba(0, 0, 0, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.25),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+            
             color: var(--text-white);
             text-decoration: none;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
         }
         
         .floating-btn:active {
-            transform: translateY(0px);
+            transform: translateY(-1px) scale(1.01);
+            
+            /* 클릭시 눌린 효과 */
+            box-shadow: 
+                0 4px 15px rgba(0, 122, 255, 0.3),
+                0 2px 5px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(0, 0, 0, 0.1),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+            
+            transition: all 0.1s ease;
+        }
+        
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            .floating-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 10px 20px;
+                font-size: 13px;
+            }
         }
 
         /* =============================================
@@ -617,7 +654,7 @@
             <p class="header-subtitle">PEG Ratio Analysis Dashboard</p>
             <div class="update-status" role="status" aria-live="polite">
                 <span class="status-badge">Live</span>
-                <span>Updated: 2025.07.22 최신 크롤링 • Manual Update</span>
+                <span>Updated: 2025.07.25 최신 크롤링 • Manual Update</span>
             </div>
         </header>
         
@@ -727,7 +764,7 @@
         
         <!-- 푸터 -->
         <footer class="app-footer">
-            <p>Data updated: 2025.07.22 최신 크롤링 • Source: Yahoo Finance</p>
+            <p>Data updated: 2025.07.25 최신 크롤링 • Source: Yahoo Finance</p>
         </footer>
     </main>
 
@@ -757,103 +794,103 @@
 
     <script>
         // =============================================
-        // 주식 데이터 모델 (2025-07-22 최신 업데이트)
+        // 주식 데이터 모델 (2025-07-25 최신 업데이트)
         // =============================================
         const STOCK_DATA = [
-            {company: "Apple Inc.", ticker: "AAPL", industry: "Consumer Ele...", peg: 1.969, trailPE: 33.096573, fwdPE: 25.569193, price: 212.48},
-            {company: "Airbnb, Inc.", ticker: "ABNB", industry: "Travel Services", peg: 1.988, trailPE: 35.043148, fwdPE: 30.682224, price: 138.07},
-            {company: "Adobe Inc.", ticker: "ADBE", industry: "Application", peg: 1.1846, trailPE: 23.539053, fwdPE: 17.891972, price: 367.68},
-            {company: "Analog Devices, Inc.", ticker: "ADI", industry: "Semiconductors", peg: 1.4147, trailPE: 65.347824, fwdPE: 31.893898, price: 240.48},
-            {company: "Automatic Data Processing, Inc.", ticker: "ADP", industry: "Application", peg: 3.1912, trailPE: 30.76687, fwdPE: 27.681692, price: 300.9},
-            {company: "Autodesk, Inc.", ticker: "ADSK", industry: "Application", peg: 1.752, trailPE: 63.339058, fwdPE: 32.152504, price: 295.16},
-            {company: "Applied Materials, Inc.", ticker: "AMAT", industry: "Semiconducto...", peg: 1.894, trailPE: 23.403404, fwdPE: 19.877193, price: 192.61},
-            {company: "Advanced Micro Devices, Inc.", ticker: "AMD", industry: "Semiconductors", peg: 0.7838, trailPE: 114.59854, fwdPE: 30.784315, price: 157.0},
-            {company: "Amgen Inc.", ticker: "AMGN", industry: "General", peg: 0.9808, trailPE: 26.970829, fwdPE: 14.313981, price: 295.87},
-            {company: "Amazon.com, Inc.", ticker: "AMZN", industry: "Internet Retail", peg: 2.9398, trailPE: 37.284554, fwdPE: 37.284554, price: 229.3},
-            {company: "ANSYS, Inc.", ticker: "ANSS", industry: "Application", peg: 2.4662, trailPE: 55.534126, fwdPE: 33.996365, price: 374.3},
-            {company: "ASML Holding N.V.", ticker: "ASML", industry: "Semiconducto...", peg: 1.503, trailPE: 25.71204, fwdPE: 26.954306, price: 719.68},
-            {company: "Broadcom Inc.", ticker: "AVGO", industry: "Semiconductors", peg: 1.3289, trailPE: 104.803635, fwdPE: 46.711506, price: 288.21},
-            {company: "Baidu, Inc.", ticker: "BIDU", industry: "Internet Con...", peg: 0.1941524778761061, trailPE: 8.775692, fwdPE: 8.008115, price: 88.81},
-            {company: "Biogen Inc.", ticker: "BIIB", industry: "General", peg: null, trailPE: 12.12253, fwdPE: 7.3637457, price: 122.68},
-            {company: "Booking Holdings Inc.", ticker: "BKNG", industry: "Travel Services", peg: 1.6409, trailPE: 35.426834, fwdPE: 27.05337, price: 5677.15},
-            {company: "Cadence Design Systems, Inc.", ticker: "CDNS", industry: "Application", peg: 3.3606, trailPE: 80.28426, fwdPE: 46.178104, price: 316.32},
-            {company: "Charter Communications, Inc.", ticker: "CHTR", industry: "Telecom Serv...", peg: 0.4056, trailPE: 10.850726, fwdPE: 10.868922, price: 388.89},
-            {company: "Comcast Corporation", ticker: "CMCSA", industry: "Telecom Serv...", peg: 1.614, trailPE: 8.623153, fwdPE: 7.99315, price: 35.01},
-            {company: "Coinbase Global, Inc.", ticker: "COIN", industry: "Financial Da...", peg: 124.8936, trailPE: 77.604126, fwdPE: 115.86275, price: 413.63},
-            {company: "Costco Wholesale Corporation", ticker: "COST", industry: "Discount Stores", peg: 5.052, trailPE: 53.869244, fwdPE: 48.148373, price: 947.56},
-            {company: "Copart, Inc.", ticker: "CPRT", industry: "Specialty Bu...", peg: 2.2747, trailPE: 30.483442, fwdPE: 26.454021, price: 46.03},
-            {company: "Salesforce, Inc.", ticker: "CRM", industry: "Application", peg: 1.4017, trailPE: 40.98125, fwdPE: 23.56514, price: 262.28},
-            {company: "CrowdStrike Holdings, Inc.", ticker: "CRWD", industry: "Infrastructure", peg: 5.424, trailPE: null, fwdPE: 112.782196, price: 481.58},
-            {company: "Cisco Systems, Inc.", ticker: "CSCO", industry: "Communicatio...", peg: 2.2644, trailPE: 27.893875, fwdPE: 17.523075, price: 68.34},
-            {company: "Cintas Corporation", ticker: "CTAS", industry: "Specialty Bu...", peg: 3.926, trailPE: 50.41458, fwdPE: 47.2906, price: 221.32},
-            {company: "Datadog, Inc.", ticker: "DDOG", industry: "Application", peg: 2.7446, trailPE: 315.80435, fwdPE: 71.56158, price: 145.27},
-            {company: "Dollar Tree, Inc.", ticker: "DLTR", industry: "Discount Stores", peg: 1.3264594610778442, trailPE: 22.151873, fwdPE: 18.533003, price: 112.31},
-            {company: "DocuSign, Inc.", ticker: "DOCU", industry: "Application", peg: 0.1340768799999999, trailPE: 15.083649, fwdPE: 21.501354, price: 79.34},
-            {company: "Electronic Arts Inc.", ticker: "EA", industry: "Electronic G...", peg: 1.3868, trailPE: 36.091766, fwdPE: 17.982416, price: 153.39},
-            {company: "eBay Inc.", ticker: "EBAY", industry: "Internet Retail", peg: 1.9797, trailPE: 18.997597, fwdPE: 15.139847, price: 79.03},
-            {company: "Exelon Corporation", ticker: "EXC", industry: "Regulated El...", peg: 2.0969, trailPE: 16.256506, fwdPE: 16.627375, price: 43.73},
-            {company: "Expeditors International of Washington, Inc.", ticker: "EXPD", industry: "Integrated F...", peg: 4.0312, trailPE: 18.694353, fwdPE: 20.918215, price: 112.54},
-            {company: "Fastenal Company", ticker: "FAST", industry: "Industrial D...", peg: 4.1189, trailPE: 44.250004, fwdPE: 21.013699, price: 46.02},
-            {company: "Fox Corporation", ticker: "FOX", industry: "Entertainment", peg: 5.6574, trailPE: 12.641089, fwdPE: 21.731916, price: 51.07},
-            {company: "Fox Corporation", ticker: "FOXA", industry: "Entertainment", peg: 6.1576, trailPE: 13.730199, fwdPE: 14.871314, price: 55.47},
-            {company: "Fortinet, Inc.", ticker: "FTNT", industry: "Infrastructure", peg: 2.9435, trailPE: 43.82787, fwdPE: 44.373444, price: 106.94},
-            {company: "Gilead Sciences, Inc.", ticker: "GILD", industry: "General", peg: 0.2251, trailPE: 22.747898, fwdPE: 14.573352, price: 108.28},
-            {company: "Alphabet Inc.", ticker: "GOOG", industry: "Internet Con...", peg: 1.3907, trailPE: 21.333704, fwdPE: 21.357542, price: 191.15},
-            {company: "Alphabet Inc.", ticker: "GOOGL", industry: "Internet Con...", peg: 1.3841, trailPE: 21.216518, fwdPE: 21.216518, price: 190.1},
-            {company: "Honeywell International Inc.", ticker: "HON", industry: "Conglomerates", peg: 2.3497, trailPE: 27.036783, fwdPE: 21.364214, price: 235.22},
-            {company: "Robinhood Markets, Inc.", ticker: "HOOD", industry: "Capital Markets", peg: 0.5641158513640641, trailPE: 59.965515, fwdPE: 142.9315, price: 104.34},
-            {company: "IDEXX Laboratories, Inc.", ticker: "IDXX", industry: "Diagnostics ...", peg: 4.2494, trailPE: 48.184086, fwdPE: 43.551003, price: 520.87},
-            {company: "Illumina, Inc.", ticker: "ILMN", industry: "Diagnostics ...", peg: null, trailPE: null, fwdPE: 21.446833, price: 94.795},
-            {company: "Intel Corporation", ticker: "INTC", industry: "Semiconductors", peg: null, trailPE: null, fwdPE: 23.979382, price: 23.26},
-            {company: "Intuit Inc.", ticker: "INTU", industry: "Application", peg: 1.9539, trailPE: 62.24042, fwdPE: 34.354027, price: 763.69},
-            {company: "Intuitive Surgical, Inc.", ticker: "ISRG", industry: "Medical Inst...", peg: 3.6627, trailPE: 75.345985, fwdPE: 65.66412, price: 516.12},
-            {company: "JD.com, Inc.", ticker: "JD", industry: "Internet Retail", peg: 0.1396309450171821, trailPE: 8.126521, fwdPE: 8.067634, price: 33.4},
-            {company: "Keurig Dr Pepper Inc.", ticker: "KDP", industry: "Non-Alcoholic", peg: 1.0301, trailPE: 30.290909, fwdPE: 16.253658, price: 33.32},
-            {company: "KLA Corporation", ticker: "KLAC", industry: "Semiconducto...", peg: 1.7493, trailPE: 34.137608, fwdPE: 28.572823, price: 937.76},
-            {company: "Lucid Group, Inc.", ticker: "LCID", industry: "Auto Manufac...", peg: null, trailPE: null, fwdPE: -3.2045455, price: 2.82},
-            {company: "Logitech International S.A.", ticker: "LOGI", industry: "Computer Har...", peg: 2.1303, trailPE: 23.026634, fwdPE: 20.277185, price: 95.1},
-            {company: "Lam Research Corporation", ticker: "LRCX", industry: "Semiconducto...", peg: 1.4936, trailPE: 28.339832, fwdPE: 23.826698, price: 101.74},
-            {company: "lululemon athletica inc.", ticker: "LULU", industry: "Apparel Retail", peg: 0.9777, trailPE: 15.174031, fwdPE: 14.950436, price: 223.21},
-            {company: "Microchip Technology Incorporated", ticker: "MCHP", industry: "Semiconductors", peg: null, trailPE: null, fwdPE: 28.403847, price: 73.85},
-            {company: "Mondelez International, Inc.", ticker: "MDLZ", industry: "Confectioners", peg: 5.6842, trailPE: 25.80669, fwdPE: 20.239067, price: 69.42},
-            {company: "MercadoLibre, Inc.", ticker: "MELI", industry: "Internet Retail", peg: 1.5639, trailPE: 58.669792, fwdPE: 49.174454, price: 2379.06},
-            {company: "Meta Platforms, Inc.", ticker: "META", industry: "Internet Con...", peg: 2.3267, trailPE: 27.882872, fwdPE: 28.180437, price: 712.965},
-            {company: "Monster Beverage Corporation", ticker: "MNST", industry: "Non-Alcoholic", peg: 1.9238, trailPE: 39.098686, fwdPE: 31.780748, price: 59.43},
-            {company: "Monolithic Power Systems, Inc.", ticker: "MPWR", industry: "Semiconductors", peg: 0.4061419117647059, trailPE: 19.332355, fwdPE: 42.186844, price: 724.77},
-            {company: "Moderna, Inc.", ticker: "MRNA", industry: "Biotechnology", peg: null, trailPE: null, fwdPE: -3.55977, price: 30.97},
-            {company: "Marvell Technology, Inc.", ticker: "MRVL", industry: "Semiconductors", peg: null, trailPE: null, fwdPE: 29.223999, price: 73.06},
-            {company: "Microsoft Corporation", ticker: "MSFT", industry: "Infrastructure", peg: 2.3859, trailPE: 39.35648, fwdPE: 34.117725, price: 510.06},
-            {company: "Netflix, Inc.", ticker: "NFLX", industry: "Entertainment", peg: 2.2808, trailPE: 52.569057, fwdPE: 51.86165, price: 1233.27},
-            {company: "ServiceNow, Inc.", ticker: "NOW", industry: "Application", peg: 2.1428, trailPE: 131.13524, fwdPE: 57.479637, price: 959.91},
-            {company: "NetEase, Inc.", ticker: "NTES", industry: "Electronic G...", peg: 2.26, trailPE: 19.62143, fwdPE: 18.26463, price: 137.35},
-            {company: "NVIDIA Corporation", ticker: "NVDA", industry: "Semiconductors", peg: 1.6716, trailPE: 55.283875, fwdPE: 41.597088, price: 171.38},
-            {company: "NXP Semiconductors N.V.", ticker: "NXPI", industry: "Semiconductors", peg: 1.5155, trailPE: 24.89313, fwdPE: 17.465189, price: 228.27},
-            {company: "Old Dominion Freight Line, Inc.", ticker: "ODFL", industry: "Trucking", peg: 3.0649, trailPE: 30.62852, fwdPE: 27.66949, price: 163.25},
-            {company: "Okta, Inc.", ticker: "OKTA", industry: "Infrastructure", peg: 0.5046, trailPE: 147.47693, fwdPE: 33.055172, price: 95.86},
-            {company: "Oracle Corporation", ticker: "ORCL", industry: "Infrastructure", peg: 2.5608, trailPE: 56.115204, fwdPE: 34.013966, price: 243.54},
-            {company: "Palo Alto Networks, Inc.", ticker: "PANW", industry: "Infrastructure", peg: 2.4359, trailPE: 114.873566, fwdPE: 27.761112, price: 199.88},
-            {company: "Paychex, Inc.", ticker: "PAYX", industry: "Application", peg: 2.5428, trailPE: 31.148474, fwdPE: 26.967865, price: 142.66},
-            {company: "PDD Holdings Inc.", ticker: "PDD", industry: "Internet Retail", peg: 1.3107, trailPE: 11.967846, fwdPE: 7.9247694, price: 111.66},
-            {company: "PepsiCo, Inc.", ticker: "PEP", industry: "Non-Alcoholic", peg: 3.2337, trailPE: 25.810566, fwdPE: 16.419466, price: 141.7},
-            {company: "PayPal Holdings, Inc.", ticker: "PYPL", industry: "Credit Services", peg: 1.0024, trailPE: 16.813484, fwdPE: 15.300613, price: 74.82},
-            {company: "QUALCOMM Incorporated", ticker: "QCOM", industry: "Semiconductors", peg: 2.2241, trailPE: 16.221428, fwdPE: 12.998365, price: 158.97},
-            {company: "Regeneron Pharmaceuticals, Inc.", ticker: "REGN", industry: "Biotechnology", peg: 1.1474, trailPE: 13.870583, fwdPE: 12.0399475, price: 545.53},
-            {company: "Rivian Automotive, Inc.", ticker: "RIVN", industry: "Auto Manufac...", peg: null, trailPE: null, fwdPE: -5.0, price: 13.7},
-            {company: "Roku, Inc.", ticker: "ROKU", industry: "Entertainment", peg: null, trailPE: null, fwdPE: -145.53969, price: 91.69},
-            {company: "Starbucks Corporation", ticker: "SBUX", industry: "Restaurants", peg: 2.4802, trailPE: 33.694546, fwdPE: 24.908604, price: 92.66},
-            {company: "Sirius XM Holdings Inc.", ticker: "SIRI", industry: "Entertainment", peg: null, trailPE: null, fwdPE: 7.5667753, price: 23.23},
-            {company: "Synopsys, Inc.", ticker: "SNPS", industry: "Infrastructure", peg: 12.0656, trailPE: 68.376884, fwdPE: 39.775387, price: 591.46},
-            {company: "Atlassian Corporation", ticker: "TEAM", industry: "Application", peg: 2.2871, trailPE: null, fwdPE: 47.289536, price: 194.36},
-            {company: "T-Mobile US, Inc.", ticker: "TMUS", industry: "Telecom Serv...", peg: 1.0567, trailPE: 22.694633, fwdPE: 21.801311, price: 232.62},
-            {company: "Tesla, Inc.", ticker: "TSLA", industry: "Auto Manufac...", peg: 5.7652, trailPE: 187.70857, fwdPE: 101.385796, price: 328.49},
-            {company: "Texas Instruments Incorporated", ticker: "TXN", industry: "Semiconductors", peg: 2.3006, trailPE: 40.56144, fwdPE: 36.491497, price: 214.57},
-            {company: "Verisk Analytics, Inc.", ticker: "VRSK", industry: "Consulting S...", peg: 4.0553, trailPE: 44.11782, fwdPE: 41.091908, price: 299.56},
-            {company: "Vertex Pharmaceuticals Incorporated", ticker: "VRTX", industry: "Biotechnology", peg: null, trailPE: null, fwdPE: 24.426744, price: 458.49},
-            {company: "Walgreens Boots Alliance, Inc.", ticker: "WBA", industry: "Pharmaceutic...", peg: null, trailPE: null, fwdPE: 7.836735, price: 11.52},
-            {company: "Workday, Inc.", ticker: "WDAY", industry: "Application", peg: 1.0231, trailPE: 130.56425, fwdPE: 28.157831, price: 233.71},
-            {company: "Xcel Energy Inc.", ticker: "XEL", industry: "Regulated El...", peg: 2.8062, trailPE: 21.05, fwdPE: 18.686684, price: 71.57},
-            {company: "Zoom Communications Inc.", ticker: "ZM", industry: "Application", peg: 1.1960624064171124, trailPE: 22.366367, fwdPE: 14.079396, price: 74.48},
-            {company: "Zscaler, Inc.", ticker: "ZS", industry: "Infrastructure", peg: 3.8964, trailPE: null, fwdPE: 81.01966, price: 288.43},
+            {company: "Apple Inc.", ticker: "AAPL", industry: "Consumer Ele...", peg: 1.9967, trailPE: 33.295948, fwdPE: 25.723223, price: 213.76},
+            {company: "Airbnb, Inc.", ticker: "ABNB", industry: "Travel Services", peg: 1.995, trailPE: 35.94416, fwdPE: 31.47111, price: 141.62},
+            {company: "Adobe Inc.", ticker: "ADBE", industry: "Application", peg: 1.2063, trailPE: 23.81102, fwdPE: 18.087105, price: 371.69},
+            {company: "Analog Devices, Inc.", ticker: "ADI", industry: "Semiconductors", peg: 1.3342, trailPE: 61.6812, fwdPE: 30.022547, price: 226.37},
+            {company: "Automatic Data Processing, Inc.", ticker: "ADP", industry: "Application", peg: 3.2229, trailPE: 31.34493, fwdPE: 28.172953, price: 306.24},
+            {company: "Autodesk, Inc.", ticker: "ADSK", industry: "Application", peg: 1.7753, trailPE: 64.47537, fwdPE: 32.799564, price: 301.1},
+            {company: "Applied Materials, Inc.", ticker: "AMAT", industry: "Semiconducto...", peg: 1.8599, trailPE: 22.857838, fwdPE: 19.41383, price: 188.12},
+            {company: "Advanced Micro Devices, Inc.", ticker: "AMD", industry: "Semiconductors", peg: 0.7744, trailPE: 119.20588, fwdPE: 31.788235, price: 162.12},
+            {company: "Amgen Inc.", ticker: "AMGN", industry: "General", peg: 1.0289, trailPE: 28.101093, fwdPE: 14.92743, price: 308.55},
+            {company: "Amazon.com, Inc.", ticker: "AMZN", industry: "Internet Retail", peg: 2.9679, trailPE: 37.822475, fwdPE: 37.760975, price: 232.23},
+            {company: "ANSYS, Inc.", ticker: "ANSS", industry: "Application", peg: 2.4662, trailPE: 55.534126, fwdPE: 29.581144, price: 374.3},
+            {company: "ASML Holding N.V.", ticker: "ASML", industry: "Semiconducto...", peg: 1.4595, trailPE: 25.803558, fwdPE: 27.156553, price: 725.08},
+            {company: "Broadcom Inc.", ticker: "AVGO", industry: "Semiconductors", peg: 1.3305, trailPE: 104.98545, fwdPE: 46.79254, price: 288.71},
+            {company: "Baidu, Inc.", ticker: "BIDU", industry: "Internet Con...", peg: 0.1989182964601769, trailPE: 8.991107, fwdPE: 8.204689, price: 90.99},
+            {company: "Biogen Inc.", ticker: "BIIB", industry: "General", peg: null, trailPE: 13.101778, fwdPE: 7.9585834, price: 132.59},
+            {company: "Booking Holdings Inc.", ticker: "BKNG", industry: "Travel Services", peg: 1.6505, trailPE: 35.176193, fwdPE: 26.923992, price: 5650.0},
+            {company: "Cadence Design Systems, Inc.", ticker: "CDNS", industry: "Application", peg: 3.4766, trailPE: 82.18735, fwdPE: 47.392704, price: 324.64},
+            {company: "Charter Communications, Inc.", ticker: "CHTR", industry: "Telecom Serv...", peg: 0.4226, trailPE: 10.605638, fwdPE: 10.620459, price: 380.0},
+            {company: "Comcast Corporation", ticker: "CMCSA", industry: "Telecom Serv...", peg: 1.6724, trailPE: 8.7118225, fwdPE: 8.075342, price: 35.37},
+            {company: "Coinbase Global, Inc.", ticker: "COIN", industry: "Financial Da...", peg: 118.3571, trailPE: 74.42777, fwdPE: 111.12045, price: 396.7},
+            {company: "Costco Wholesale Corporation", ticker: "COST", industry: "Discount Stores", peg: 5.0002, trailPE: 53.056816, fwdPE: 47.449184, price: 933.8},
+            {company: "Copart, Inc.", ticker: "CPRT", industry: "Specialty Bu...", peg: 2.3168, trailPE: 30.642385, fwdPE: 26.591953, price: 46.27},
+            {company: "Salesforce, Inc.", ticker: "CRM", industry: "Application", peg: 1.4276, trailPE: 41.893585, fwdPE: 24.052113, price: 267.7},
+            {company: "CrowdStrike Holdings, Inc.", ticker: "CRWD", industry: "Infrastructure", peg: 5.2595, trailPE: null, fwdPE: 108.20375, price: 462.03},
+            {company: "Cisco Systems, Inc.", ticker: "CSCO", industry: "Communicatio...", peg: 2.2833, trailPE: 27.873468, fwdPE: 17.510256, price: 68.29},
+            {company: "Cintas Corporation", ticker: "CTAS", industry: "Specialty Bu...", peg: 4.1814, trailPE: 50.654545, fwdPE: 47.623936, price: 222.88},
+            {company: "Datadog, Inc.", ticker: "DDOG", industry: "Application", peg: 2.7253, trailPE: 305.33334, fwdPE: 72.197044, price: 146.56},
+            {company: "Dollar Tree, Inc.", ticker: "DLTR", industry: "Discount Stores", peg: 1.3488998203592817, trailPE: 22.526627, fwdPE: 18.846535, price: 114.21},
+            {company: "DocuSign, Inc.", ticker: "DOCU", industry: "Application", peg: 0.1357498933333333, trailPE: 15.271863, fwdPE: 21.769648, price: 80.33},
+            {company: "Electronic Arts Inc.", ticker: "EA", industry: "Electronic G...", peg: 1.4202, trailPE: 36.0, fwdPE: 17.894491, price: 152.64},
+            {company: "eBay Inc.", ticker: "EBAY", industry: "Internet Retail", peg: 2.0757, trailPE: 19.819712, fwdPE: 15.795019, price: 82.45},
+            {company: "Exelon Corporation", ticker: "EXC", industry: "Regulated El...", peg: 2.1012, trailPE: 16.258364, fwdPE: 16.629276, price: 43.735},
+            {company: "Expeditors International of Washington, Inc.", ticker: "EXPD", industry: "Integrated F...", peg: 4.167, trailPE: 19.37645, fwdPE: 21.71747, price: 116.84},
+            {company: "Fastenal Company", ticker: "FAST", industry: "Industrial D...", peg: 4.2414, trailPE: 46.53398, fwdPE: 21.885845, price: 47.93},
+            {company: "Fox Corporation", ticker: "FOX", industry: "Entertainment", peg: 5.6825, trailPE: 12.794555, fwdPE: 21.995745, price: 51.69},
+            {company: "Fox Corporation", ticker: "FOXA", industry: "Entertainment", peg: 6.1817, trailPE: 13.928218, fwdPE: 15.085791, price: 56.27},
+            {company: "Fortinet, Inc.", ticker: "FTNT", industry: "Infrastructure", peg: 2.9334, trailPE: 43.115223, fwdPE: 43.473026, price: 104.77},
+            {company: "Gilead Sciences, Inc.", ticker: "GILD", industry: "General", peg: 0.2363, trailPE: 23.781511, fwdPE: 15.235532, price: 113.2},
+            {company: "Alphabet Inc.", ticker: "GOOG", industry: "Internet Con...", peg: 1.4324, trailPE: 20.597013, fwdPE: 21.586592, price: 193.2},
+            {company: "Alphabet Inc.", ticker: "GOOGL", industry: "Internet Con...", peg: 1.4228, trailPE: 20.487206, fwdPE: 21.447544, price: 192.17},
+            {company: "Honeywell International Inc.", ticker: "HON", industry: "Conglomerates", peg: 2.3768, trailPE: 25.772675, fwdPE: 20.388737, price: 224.48},
+            {company: "Robinhood Markets, Inc.", ticker: "HOOD", industry: "Capital Markets", peg: 0.5479371213546567, trailPE: 58.245716, fwdPE: 139.63013, price: 101.93},
+            {company: "IDEXX Laboratories, Inc.", ticker: "IDXX", industry: "Diagnostics ...", peg: 4.4646, trailPE: 50.876038, fwdPE: 45.98411, price: 549.97},
+            {company: "Illumina, Inc.", ticker: "ILMN", industry: "Diagnostics ...", peg: null, trailPE: null, fwdPE: 24.352942, price: 107.64},
+            {company: "Intel Corporation", ticker: "INTC", industry: "Semiconductors", peg: null, trailPE: null, fwdPE: 23.329895, price: 22.63},
+            {company: "Intuit Inc.", ticker: "INTU", industry: "Application", peg: 2.0146, trailPE: 63.72023, fwdPE: 35.14215, price: 781.21},
+            {company: "Intuitive Surgical, Inc.", ticker: "ISRG", industry: "Medical Inst...", peg: 3.5449, trailPE: 68.05153, fwdPE: 62.16412, price: 488.61},
+            {company: "JD.com, Inc.", ticker: "JD", industry: "Internet Retail", peg: 0.1399235910652921, trailPE: 8.143553, fwdPE: 8.084541, price: 33.47},
+            {company: "Keurig Dr Pepper Inc.", ticker: "KDP", industry: "Non-Alcoholic", peg: 1.0289, trailPE: 30.51818, fwdPE: 16.37561, price: 33.57},
+            {company: "KLA Corporation", ticker: "KLAC", industry: "Semiconducto...", peg: 1.6759, trailPE: 32.93916, fwdPE: 27.549665, price: 904.18},
+            {company: "Lucid Group, Inc.", ticker: "LCID", industry: "Auto Manufac...", peg: null, trailPE: null, fwdPE: -3.3977273, price: 2.99},
+            {company: "Logitech International S.A.", ticker: "LOGI", industry: "Computer Har...", peg: 2.1609, trailPE: 23.176756, fwdPE: 20.409382, price: 95.72},
+            {company: "Lam Research Corporation", ticker: "LRCX", industry: "Semiconducto...", peg: 1.4278, trailPE: 27.236769, fwdPE: 22.899298, price: 97.78},
+            {company: "lululemon athletica inc.", ticker: "LULU", industry: "Apparel Retail", peg: 0.9533, trailPE: 14.876871, fwdPE: 14.647689, price: 218.69},
+            {company: "Microchip Technology Incorporated", ticker: "MCHP", industry: "Semiconductors", peg: null, trailPE: null, fwdPE: 26.080769, price: 67.81},
+            {company: "Mondelez International, Inc.", ticker: "MDLZ", industry: "Confectioners", peg: 5.7135, trailPE: 26.089218, fwdPE: 20.460642, price: 70.18},
+            {company: "MercadoLibre, Inc.", ticker: "MELI", industry: "Internet Retail", peg: 1.5515, trailPE: 58.73373, fwdPE: 49.422283, price: 2391.05},
+            {company: "Meta Platforms, Inc.", ticker: "META", industry: "Internet Con...", peg: 2.3574, trailPE: 27.976517, fwdPE: 28.252964, price: 714.8},
+            {company: "Monster Beverage Corporation", ticker: "MNST", industry: "Non-Alcoholic", peg: 1.93, trailPE: 39.592106, fwdPE: 32.18182, price: 60.18},
+            {company: "Monolithic Power Systems, Inc.", ticker: "MPWR", industry: "Semiconductors", peg: 0.3993332983193278, trailPE: 19.008265, fwdPE: 41.501747, price: 713.0},
+            {company: "Moderna, Inc.", ticker: "MRNA", industry: "Biotechnology", peg: null, trailPE: null, fwdPE: -3.9091952, price: 34.01},
+            {company: "Marvell Technology, Inc.", ticker: "MRVL", industry: "Semiconductors", peg: null, trailPE: null, fwdPE: 29.616001, price: 74.04},
+            {company: "Microsoft Corporation", ticker: "MSFT", industry: "Infrastructure", peg: 2.3663, trailPE: 39.450195, fwdPE: 34.172577, price: 510.88},
+            {company: "Netflix, Inc.", ticker: "NFLX", industry: "Entertainment", peg: 2.1729, trailPE: 50.416737, fwdPE: 49.65349, price: 1180.76},
+            {company: "ServiceNow, Inc.", ticker: "NOW", industry: "Application", peg: 2.1273, trailPE: 135.35054, fwdPE: 59.651493, price: 996.18},
+            {company: "NetEase, Inc.", ticker: "NTES", industry: "Electronic G...", peg: 2.3327, trailPE: 19.47143, fwdPE: 18.125, price: 136.3},
+            {company: "NVIDIA Corporation", ticker: "NVDA", industry: "Semiconductors", peg: 1.6558, trailPE: 55.864956, fwdPE: 42.169907, price: 173.74},
+            {company: "NXP Semiconductors N.V.", ticker: "NXPI", industry: "Semiconductors", peg: 1.387, trailPE: 24.42111, fwdPE: 17.171385, price: 224.43},
+            {company: "Old Dominion Freight Line, Inc.", ticker: "ODFL", industry: "Trucking", peg: 3.1386, trailPE: 31.480299, fwdPE: 28.438982, price: 167.79},
+            {company: "Okta, Inc.", ticker: "OKTA", industry: "Infrastructure", peg: 0.5056, trailPE: 150.6, fwdPE: 33.755173, price: 97.89},
+            {company: "Oracle Corporation", ticker: "ORCL", industry: "Infrastructure", peg: 2.5237, trailPE: 56.080833, fwdPE: 33.914806, price: 242.83},
+            {company: "Palo Alto Networks, Inc.", ticker: "PANW", industry: "Infrastructure", peg: 2.4787, trailPE: 116.27746, fwdPE: 27.93889, price: 201.16},
+            {company: "Paychex, Inc.", ticker: "PAYX", industry: "Application", peg: 2.5744, trailPE: 31.965065, fwdPE: 27.674858, price: 146.4},
+            {company: "PDD Holdings Inc.", ticker: "PDD", industry: "Internet Retail", peg: 1.473, trailPE: 12.669882, fwdPE: 8.389638, price: 118.21},
+            {company: "PepsiCo, Inc.", ticker: "PEP", industry: "Non-Alcoholic", peg: 3.2718, trailPE: 26.322405, fwdPE: 16.745075, price: 144.51},
+            {company: "PayPal Holdings, Inc.", ticker: "PYPL", industry: "Credit Services", peg: 1.0361, trailPE: 17.48764, fwdPE: 15.914111, price: 77.82},
+            {company: "QUALCOMM Incorporated", ticker: "QCOM", industry: "Semiconductors", peg: 2.2971, trailPE: 16.208162, fwdPE: 12.987735, price: 158.84},
+            {company: "Regeneron Pharmaceuticals, Inc.", ticker: "REGN", industry: "Biotechnology", peg: 1.2105, trailPE: 14.360123, fwdPE: 12.461708, price: 564.64},
+            {company: "Rivian Automotive, Inc.", ticker: "RIVN", industry: "Auto Manufac...", peg: null, trailPE: null, fwdPE: -5.0437956, price: 13.82},
+            {company: "Roku, Inc.", ticker: "ROKU", industry: "Entertainment", peg: null, trailPE: null, fwdPE: -142.93651, price: 90.05},
+            {company: "Starbucks Corporation", ticker: "SBUX", industry: "Restaurants", peg: 2.5363, trailPE: 34.072727, fwdPE: 25.188171, price: 93.7},
+            {company: "Sirius XM Holdings Inc.", ticker: "SIRI", industry: "Entertainment", peg: null, trailPE: null, fwdPE: 7.8729644, price: 24.17},
+            {company: "Synopsys, Inc.", ticker: "SNPS", industry: "Infrastructure", peg: 12.6776, trailPE: 70.40185, fwdPE: 41.00067, price: 609.68},
+            {company: "Atlassian Corporation", ticker: "TEAM", industry: "Application", peg: 2.3776, trailPE: null, fwdPE: 48.620438, price: 199.83},
+            {company: "T-Mobile US, Inc.", ticker: "TMUS", industry: "Telecom Serv...", peg: 1.088, trailPE: 23.349056, fwdPE: 23.195877, price: 247.5},
+            {company: "Tesla, Inc.", ticker: "TSLA", industry: "Auto Manufac...", peg: 5.8161, trailPE: 173.4659, fwdPE: 94.22839, price: 305.3},
+            {company: "Texas Instruments Incorporated", ticker: "TXN", industry: "Semiconductors", peg: 1.978, trailPE: 35.235294, fwdPE: 31.579931, price: 185.69},
+            {company: "Verisk Analytics, Inc.", ticker: "VRSK", industry: "Consulting S...", peg: 3.9934, trailPE: 43.67109, fwdPE: 40.615913, price: 296.09},
+            {company: "Vertex Pharmaceuticals Incorporated", ticker: "VRTX", industry: "Biotechnology", peg: null, trailPE: null, fwdPE: 25.160894, price: 472.27},
+            {company: "Walgreens Boots Alliance, Inc.", ticker: "WBA", industry: "Pharmaceutic...", peg: null, trailPE: null, fwdPE: 7.8843536, price: 11.59},
+            {company: "Workday, Inc.", ticker: "WDAY", industry: "Application", peg: 1.0581, trailPE: 131.04697, fwdPE: 28.577711, price: 237.195},
+            {company: "Xcel Energy Inc.", ticker: "XEL", industry: "Regulated El...", peg: 2.8907, trailPE: 21.405882, fwdPE: 19.002611, price: 72.78},
+            {company: "Zoom Communications Inc.", ticker: "ZM", industry: "Application", peg: 1.2145300534759358, trailPE: 22.711712, fwdPE: 14.296786, price: 75.63},
+            {company: "Zscaler, Inc.", ticker: "ZS", industry: "Infrastructure", peg: 3.8242, trailPE: null, fwdPE: 79.85955, price: 284.3},
         ];
 
         // =============================================
