@@ -780,5 +780,7 @@ def generate_html_content(df, date):
     return html_template
 
 if __name__ == "__main__":
-    # 간소화된 워크플로우: index.html을 직접 업데이트
-    update_index_html() 
+    # index.html 업데이트만 실행
+    print("📝 index.html 업데이트 중...")
+    update_index_html()
+    print("✅ 업데이트 완료!") 

@@ -1,0 +1,95 @@
+﻿날짜,종목명,티커,산업군,현재가격,Trailing P/E,Forward P/E,PEG Ratio
+2025-08-01,Apple Inc.,AAPL,Technology - Consumer Electronics,207.57,32.382217,24.978338,1.9492
+2025-08-01,"Airbnb, Inc.",ABNB,Consumer Cyclical - Travel Services,132.41,33.52152,29.424446,1.8891
+2025-08-01,Adobe Inc.,ADBE,Technology - Software - Application,357.69,22.928846,17.40584,1.1584
+2025-08-01,"Analog Devices, Inc.",ADI,Technology - Semiconductors,224.63,61.04076,29.791779,1.314
+2025-08-01,"Automatic Data Processing, Inc.",ADP,Technology - Software - Application,309.5,31.043129,28.472862,3.294
+2025-08-01,"Autodesk, Inc.",ADSK,Technology - Software - Application,303.11,64.90578,33.018517,1.8175
+2025-08-01,"Applied Materials, Inc.",AMAT,Technology - Semiconductor Equipment & Materials,180.06,21.878494,18.582045,1.8836
+2025-08-01,"Advanced Micro Devices, Inc.",AMD,Technology - Semiconductors,176.31,127.76087,34.570587,0.8451
+2025-08-01,Amgen Inc.,AMGN,Healthcare - Drug Manufacturers - General,295.1,26.87614,14.27673,0.9796
+2025-08-01,"Amazon.com, Inc.",AMZN,Consumer Cyclical - Internet Retail,234.11,38.190865,38.066666,2.8094
+2025-08-01,"ANSYS, Inc.",ANSS,Technology - Software - Application,374.3,55.534126,29.581144,2.4662
+2025-08-01,ASML Holding N.V.,ASML,Technology - Semiconductor Equipment & Materials,694.71,24.99856,26.019102,1.4218
+2025-08-01,Broadcom Inc.,AVGO,Technology - Semiconductors,293.7,107.58242,47.6013,1.4193
+2025-08-01,"Baidu, Inc.",BIDU,Communication Services - Internet Content & Information,87.87,8.682807,7.9233546,0.1920975
+2025-08-01,Biogen Inc.,BIIB,Healthcare - Drug Manufacturers - General,128.0,12.260537,7.6830735,
+2025-08-01,Booking Holdings Inc.,BKNG,Consumer Cyclical - Travel Services,5504.06,38.3131,26.228544,1.5788
+2025-08-01,"Cadence Design Systems, Inc.",CDNS,Technology - Software - Application,364.57,99.06793,53.2219,3.8212
+2025-08-01,"Charter Communications, Inc.",CHTR,Communication Services - Telecom Services,269.36,7.3736653,7.528228,0.6372
+2025-08-01,Comcast Corporation,CMCSA,Communication Services - Telecom Services,33.23,5.5107794,7.5867577,1.5187
+2025-08-01,"Coinbase Global, Inc.",COIN,Financial Services - Financial Data & Stock Exchanges,377.76,70.8743,105.81513,14.6494
+2025-08-01,Costco Wholesale Corporation,COST,Consumer Defensive - Discount Stores,939.64,53.177135,47.745934,4.9275
+2025-08-01,"Copart, Inc.",CPRT,Industrials - Specialty Business Services,45.33,30.019869,26.051725,2.2896
+2025-08-01,"Salesforce, Inc.",CRM,Technology - Software - Application,258.33,40.490593,23.210241,1.4147
+2025-08-01,"CrowdStrike Holdings, Inc.",CRWD,Technology - Software - Infrastructure,454.57,,106.45668,5.1803
+2025-08-01,"Cisco Systems, Inc.",CSCO,Technology - Communication Equipment,68.08,27.787756,17.45641,2.2625
+2025-08-01,Cintas Corporation,CTAS,Industrials - Specialty Business Services,222.55,50.464855,47.55342,4.1724
+2025-08-01,"Datadog, Inc.",DDOG,Technology - Software - Application,139.98,291.625,68.955666,2.6492
+2025-08-01,"Dollar Tree, Inc.",DLTR,Consumer Defensive - Discount Stores,113.55,22.440712,18.737625,1.3437552095808385
+2025-08-01,"DocuSign, Inc.",DOCU,Technology - Software - Application,75.64,14.380227,20.498644,0.12782424
+2025-08-01,Electronic Arts Inc.,EA,Communication Services - Electronic Gaming & Multimedia,152.49,38.1225,17.876905,1.4436
+2025-08-01,eBay Inc.,EBAY,Consumer Cyclical - Internet Retail,91.75,20.38889,17.57663,1.9453
+2025-08-01,Exelon Corporation,EXC,Utilities - Utilities - Regulated Electric,44.94,17.087452,17.087452,2.1376
+2025-08-01,"Expeditors International of Washington, Inc.",EXPD,Industrials - Integrated Freight & Logistics,116.24,19.30897,21.605947,4.0204
+2025-08-01,Fastenal Company,FAST,Industrials - Industrial Distribution,46.13,44.78641,21.063927,4.1502
+2025-08-01,Fox Corporation,FOX,Communication Services - Entertainment,51.14,12.658416,21.761703,5.5982
+2025-08-01,Fox Corporation,FOXA,Communication Services - Entertainment,55.76,13.80198,14.949061,6.104
+2025-08-01,"Fortinet, Inc.",FTNT,Technology - Software - Infrastructure,99.9,41.11111,41.452282,2.8399
+2025-08-01,"Gilead Sciences, Inc.",GILD,Healthcare - Drug Manufacturers - General,112.29,23.590336,15.113055,0.2387
+2025-08-01,Alphabet Inc.,GOOG,Communication Services - Internet Content & Information,192.86,20.58271,21.548603,1.4336
+2025-08-01,Alphabet Inc.,GOOGL,Communication Services - Internet Content & Information,191.9,20.458422,21.41741,1.4609
+2025-08-01,Honeywell International Inc.,HON,Industrials - Conglomerates,222.35,25.324602,20.195276,2.1545
+2025-08-01,"Robinhood Markets, Inc.",HOOD,Financial Services - Capital Markets,103.05,52.309647,141.16438,0.49209451552210726
+2025-08-01,"IDEXX Laboratories, Inc.",IDXX,Healthcare - Diagnostics & Research,534.31,49.24516,44.674747,4.724
+2025-08-01,"Illumina, Inc.",ILMN,Healthcare - Diagnostics & Research,102.71,,23.237556,
+2025-08-01,Intel Corporation,INTC,Technology - Semiconductors,19.8,,20.41237,
+2025-08-01,Intuit Inc.,INTU,Technology - Software - Application,785.13,64.09225,35.31849,2.0961
+2025-08-01,"Intuitive Surgical, Inc.",ISRG,Healthcare - Medical Instruments & Supplies,481.09,67.097626,61.20738,3.7403
+2025-08-01,"JD.com, Inc.",JD,Consumer Cyclical - Internet Retail,31.49,7.6618004,7.6062803,0.13164605498281787
+2025-08-01,Keurig Dr Pepper Inc.,KDP,Consumer Defensive - Beverages - Non-Alcoholic,32.65,28.893806,15.92683,1.0015
+2025-08-01,KLA Corporation,KLAC,Technology - Semiconductor Equipment & Materials,879.03,31.953108,26.783365,1.728
+2025-08-01,"Lucid Group, Inc.",LCID,Consumer Cyclical - Auto Manufacturers,2.46,,-2.7954545,
+2025-08-01,Logitech International S.A.,LOGI,Technology - Computer Hardware,92.88,22.167063,19.803837,2.0147
+2025-08-01,Lam Research Corporation,LRCX,Technology - Semiconductor Equipment & Materials,94.84,22.85301,22.210772,1.457
+2025-08-01,lululemon athletica inc.,LULU,Consumer Cyclical - Apparel Retail,200.53,13.641497,13.431346,0.8786
+2025-08-01,Microchip Technology Incorporated,MCHP,Technology - Semiconductors,67.59,,25.996153,
+2025-08-01,"Mondelez International, Inc.",MDLZ,Consumer Defensive - Confectioners,64.69,23.69597,18.860058,5.3007
+2025-08-01,"MercadoLibre, Inc.",MELI,Consumer Cyclical - Internet Retail,2373.89,58.4846,49.067585,1.5415
+2025-08-01,"Meta Platforms, Inc.",META,Communication Services - Internet Content & Information,773.44,28.094442,30.570751,2.5551
+2025-08-01,Monster Beverage Corporation,MNST,Consumer Defensive - Beverages - Non-Alcoholic,58.75,38.651318,31.417112,1.9903
+2025-08-01,"Monolithic Power Systems, Inc.",MPWR,Technology - Semiconductors,711.24,18.981585,41.3993,0.3987727941176471
+2025-08-01,"Moderna, Inc.",MRNA,Healthcare - Biotechnology,29.56,,-3.3977013,
+2025-08-01,"Marvell Technology, Inc.",MRVL,Technology - Semiconductors,80.37,,32.148003,
+2025-08-01,Microsoft Corporation,MSFT,Technology - Software - Infrastructure,533.5,39.055637,35.68562,2.3937
+2025-08-01,"Netflix, Inc.",NFLX,Communication Services - Entertainment,1159.4,49.504696,48.755257,2.1866
+2025-08-01,"ServiceNow, Inc.",NOW,Technology - Software - Application,943.12,119.0808,56.474247,2.1027
+2025-08-01,"NetEase, Inc.",NTES,Communication Services - Electronic Gaming & Multimedia,130.3,18.614286,17.327127,2.1632
+2025-08-01,NVIDIA Corporation,NVDA,Technology - Semiconductors,177.87,57.563107,43.17233,1.7381
+2025-08-01,NXP Semiconductors N.V.,NXPI,Technology - Semiconductors,213.77,25.509546,16.355778,1.3167
+2025-08-01,"Old Dominion Freight Line, Inc.",ODFL,Industrials - Trucking,149.25,29.15039,25.29661,2.7693
+2025-08-01,"Okta, Inc.",OKTA,Technology - Software - Infrastructure,97.8,150.46155,33.724136,0.5171
+2025-08-01,Oracle Corporation,ORCL,Technology - Software - Infrastructure,253.77,58.472347,35.442738,2.6106
+2025-08-01,"Palo Alto Networks, Inc.",PANW,Technology - Software - Infrastructure,173.6,99.77012,24.111113,2.1599
+2025-08-01,"Paychex, Inc.",PAYX,Technology - Software - Application,144.33,31.513102,27.283554,2.5862
+2025-08-01,PDD Holdings Inc.,PDD,Consumer Cyclical - Internet Retail,113.45,12.146681,8.051809,1.4102
+2025-08-01,"PepsiCo, Inc.",PEP,Consumer Defensive - Beverages - Non-Alcoholic,137.92,25.122042,15.98146,3.1742
+2025-08-01,"PayPal Holdings, Inc.",PYPL,Financial Services - Credit Services,68.76,14.723769,14.061351,0.8959
+2025-08-01,QUALCOMM Incorporated,QCOM,Technology - Semiconductors,146.76,14.166023,12.0,2.2853
+2025-08-01,"Regeneron Pharmaceuticals, Inc.",REGN,Healthcare - Biotechnology,545.46,13.868802,12.038403,1.1737
+2025-08-01,"Rivian Automotive, Inc.",RIVN,Consumer Cyclical - Auto Manufacturers,12.87,,-4.69708,
+2025-08-01,"Roku, Inc.",ROKU,Communication Services - Entertainment,94.16,,-149.46033,
+2025-08-01,Starbucks Corporation,SBUX,Consumer Cyclical - Restaurants,89.16,38.597404,23.967743,2.5299
+2025-08-01,Sirius XM Holdings Inc.,SIRI,Communication Services - Entertainment,21.12,,6.8794794,
+2025-08-01,"Synopsys, Inc.",SNPS,Technology - Software - Infrastructure,633.47,72.98041,42.600536,13.3158
+2025-08-01,Atlassian Corporation,TEAM,Technology - Software - Application,191.78,,46.6618,2.2509
+2025-08-01,"T-Mobile US, Inc.",TMUS,Communication Services - Telecom Services,238.41,22.512749,22.343956,0.9884
+2025-08-01,"Tesla, Inc.",TSLA,Consumer Cyclical - Auto Manufacturers,308.27,185.70482,95.14506,5.6581
+2025-08-01,Texas Instruments Incorporated,TXN,Technology - Semiconductors,181.06,33.100548,30.792517,2.0327
+2025-08-01,"Verisk Analytics, Inc.",VRSK,Industrials - Consulting Services,278.71,43.27795,38.231823,3.7003
+2025-08-01,Vertex Pharmaceuticals Incorporated,VRTX,Healthcare - Biotechnology,456.87,,24.340437,
+2025-08-01,"Walgreens Boots Alliance, Inc.",WBA,Healthcare - Pharmaceutical Retailers,11.64,,7.9183674,
+2025-08-01,"Workday, Inc.",WDAY,Technology - Software - Application,229.38,128.14526,27.636145,1.0069
+2025-08-01,Xcel Energy Inc.,XEL,Utilities - Utilities - Regulated Electric,73.44,20.343493,19.174936,2.8864
+2025-08-01,Zoom Communications Inc.,ZM,Technology - Software - Application,74.05,22.237238,13.998111,1.1891571122994653
+2025-08-01,"Zscaler, Inc.",ZS,Technology - Software - Infrastructure,285.56,,80.213486,3.8537
